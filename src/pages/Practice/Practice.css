@@ -1,0 +1,318 @@
+/* Reset cho trang Practice */
+.practice-page {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Container cho banner */
+.banner-practice-container {
+    position: relative;
+    width: 100%;
+    height: 50vh; /* Giảm từ calc(100vh - 60px) xuống 50vh */
+    background: #72c5e6; /* Thêm background cho phần trống nếu có */
+    margin-top: 60px;
+    overflow: hidden;
+}
+
+/* Ảnh banner */
+.banner-practice-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 0%;
+    /* transform: perspective(800px) translateZ(-200px); */
+}
+
+/* Nội dung text trên banner */
+.banner-practice {
+    position: absolute;
+    top: 70%;
+    left: 72%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    max-width: 700px;
+    padding: 30px 20px;
+    z-index: 10;
+}
+
+.banner-practice h1 {
+    font-size: 2.3rem; /* Giảm từ 3rem */
+    font-weight: 700;
+    margin-bottom: 15px; /* Giảm từ 20px */
+    letter-spacing: 1.2px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #0852B2;
+    white-space: nowrap; /* Không cho xuống dòng */
+}
+
+.banner-practice h2 {
+    font-size: 1.3rem; /* Giảm từ 1.5rem */
+    font-weight: 400;
+    margin-bottom: 20px; /* Giảm từ 30px */
+    line-height: 1.5;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    color: #333;
+    white-space: nowrap; /* Không cho xuống dòng */
+}
+
+.banner-practice button {
+    padding: 12px 28px; /* Giảm từ 14px 32px */
+    font-size: 1rem; /* Giảm từ 1.1rem */
+    font-weight: 600;
+    background: #0852B2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(8, 82, 178, 0.3);
+}
+
+.banner-practice button:hover {
+    background: #063d85;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(8, 82, 178, 0.4);
+}
+
+/* Practice Section */
+.practice-section {
+    padding: 60px 40px;
+    background: linear-gradient(135deg, #f6f9ff 0%, #e3eefe 100%);
+    min-height: 50vh;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #222;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.practice-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.practice-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.practice-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.card-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.vocabulary-icon {
+    background: #10b981;
+    color: #fff;
+}
+
+.listening-icon {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.card-content h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.card-content p {
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.practice-btn {
+    padding: 14px 32px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vocabulary-btn {
+    background: #10b981;
+}
+
+.vocabulary-btn:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.listening-btn {
+    background: #3b82f6;
+}
+
+.listening-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .banner-practice-container {
+        height: 45vh;
+    }
+    
+    .banner-practice h1 {
+        font-size: 1.9rem;
+    }
+    
+    .banner-practice h2 {
+        font-size: 1rem;
+    }
+    
+    .banner-practice button {
+        font-size: 0.95rem;
+        padding: 10px 24px;
+    }
+
+    .practice-cards {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+        margin-bottom: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner-practice-container {
+        height: 40vh;
+    }
+    
+    .banner-practice {
+        max-width: 90%;
+        padding: 20px 16px;
+    }
+    
+    .banner-practice h1 {
+        font-size: 1.6rem;
+        margin-bottom: 12px;
+    }
+    
+    .banner-practice h2 {
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+    }
+    
+    .banner-practice button {
+        font-size: 0.9rem;
+        padding: 9px 20px;
+    }
+
+    .practice-section {
+        padding: 40px 20px;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .practice-card {
+        padding: 30px 20px;
+    }
+    
+    .card-content h3 {
+        font-size: 1.4rem;
+    }
+    
+    .card-content p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .banner-practice-container {
+        height: 35vh;
+    }
+    
+    .banner-practice h1 {
+        font-size: 1.3rem;
+        letter-spacing: 1px;
+    }
+    
+    .banner-practice h2 {
+        font-size: 0.85rem;
+        margin-bottom: 14px;
+    }
+    
+    .banner-practice button {
+        font-size: 0.85rem;
+        padding: 8px 18px;
+    }
+
+    .practice-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+    }
+    
+    .card-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .card-icon svg {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .card-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .practice-btn {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+}
