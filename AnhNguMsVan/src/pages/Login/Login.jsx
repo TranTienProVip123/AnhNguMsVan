@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Header from "../../components/Header/Header"
 import "./Login.css";
 
 const Login = () => {
@@ -50,6 +51,7 @@ const Login = () => {
 
     return (
         <div className="login-page">
+            <Header/>
             <div className={`auth-container ${isRegister ? "active" : ""}`}>
                 <div className="form-container sign-up">
                     <form onSubmit={handleRegister}>
