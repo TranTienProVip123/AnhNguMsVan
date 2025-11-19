@@ -1,9 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header.jsx";
 import { LEVELS, getLevelColor, getLevelInfo } from "../../Practice/Vocabulary/Levels.jsx"
 import "./Vocabulary.css";
 
 const Vocabulary = () => {
+    const navigate = useNavigate();
+    const [showLevelGuide, setShowLevelGuide] = useState(false);
+    const [selectedTopic, setSelectedTopic] = useState(null);
+
     const topics = [
         {
             id: 1,
@@ -122,10 +127,18 @@ const Vocabulary = () => {
         },
     ];
 
+    const handleTopicCardClick = (topic) => {
+        setSelectedTopic(topic);
+    };
+
     const handleLevelClick = (topicId, level) => {
         console.log(`Selected Topic ${topicId}, Level ${level}`);
-        // Xử lý logic khi người dùng click vào level
-        // Ví dụ: navigate(`/vocabulary/${topicId}/${level}`)
+        navigate(`/vocabulary/${topicId}/${level}`);
+        setSelectedTopic(null); // Đóng modal
+    };
+
+    const handleBackToPractice = () => {
+        navigate("/practice");
     };
 
 
@@ -139,31 +152,100 @@ const Vocabulary = () => {
                     <p>23 Chủ đề quan trọng nhất, từ cấp độ A1 (Cơ bản) đến C2 (Thành thạo).</p>
                 </div>
 
-                {/* Chú thích levels - Compact */}
+                {/* Nút xem hướng dẫn - Click để mở modal */}
                 <div className="levels-legend">
-                    <span className="legend-icon">ℹ️</span>
-                    <span className="legend-text">Hover vào các cấp độ để xem chi tiết</span>
-                    {LEVELS.map((level) => {
-                        const info = getLevelInfo(level);
-                        return (
-                            <div key={level} className="legend-item" title={`${info.name}: ${info.description}`}>
-                                <span 
-                                    className="legend-badge"
-                                    style={{ backgroundColor: getLevelColor(level) }}
-                                >
-                                    {level}
-                                </span>
-                                <span className="legend-name">{info.name}</span>
-                            </div>
-                        );
-                    })}
+                    <button 
+                        className="guide-button"
+                        onClick={() => setShowLevelGuide(true)}
+                    >
+                        <span className="legend-icon">ℹ️</span>
+                        <span>Xem hướng dẫn các cấp độ (CEFR)</span>
+                    </button>
                 </div>
 
+                {/* Modal hiển thị chi tiết levels */}
+                {showLevelGuide && (
+                    <div className="level-guide-modal" onClick={() => setShowLevelGuide(false)}>
+                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>📚 Hướng dẫn các cấp độ (CEFR)</h3>
+                                <button 
+                                    className="close-btn"
+                                    onClick={() => setShowLevelGuide(false)}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                {LEVELS.map((level) => {
+                                    const info = getLevelInfo(level);
+                                    return (
+                                        <div key={level} className="level-guide-item">
+                                            <div 
+                                                className="level-badge"
+                                                style={{ backgroundColor: getLevelColor(level) }}
+                                            >
+                                                {level}
+                                            </div>
+                                            <div className="level-info">
+                                                <h4>{info.name}</h4>
+                                                <p>{info.description}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal chọn level khi click vào topic card */}
+                {selectedTopic && (
+                    <div className="level-guide-modal" onClick={() => setSelectedTopic(null)}>
+                        <div className="modal-content topic-level-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <div>
+                                    <h3>{selectedTopic.title}</h3>
+                                    <p className="modal-subtitle">{selectedTopic.subtitle}</p>
+                                </div>
+                                <button 
+                                    className="close-btn"
+                                    onClick={() => setSelectedTopic(null)}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <h4 className="select-level-title">Chọn cấp độ bạn muốn luyện tập:</h4>
+                                <div className="modal-levels-grid">
+                                    {LEVELS.map((level) => {
+                                        const info = getLevelInfo(level);
+                                        return (
+                                            <button
+                                                key={level}
+                                                className="modal-level-btn"
+                                                style={{ backgroundColor: getLevelColor(level) }}
+                                                onClick={() => handleLevelClick(selectedTopic.id, level)}
+                                            >
+                                                <span className="modal-level-name">{level}</span>
+                                                <span className="modal-level-desc">{info.name}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Hiển thị lưới các chủ đề */}
                 <div className="topics-grid">
                     {topics.map((topic) => (
-                        <div key={topic.id} className="topic-card">
-                            <div className="topic-number">{topic.id}.</div>
-                            <h3 className="topic-title">{topic.title}</h3>
+                        <div key={topic.id} className="topic-card" onClick={() => handleTopicCardClick(topic)}>
+                            <div className="topic-header">
+                                <span className="topic-number">{topic.id}.</span>
+                                <h3 className="topic-title">{topic.title}</h3>
+                            </div>
                             <p className="topic-subtitle">{topic.subtitle}</p>
                             
                             <div className="topic-levels">
@@ -184,6 +266,13 @@ const Vocabulary = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+                {/* Nút quay lại */}
+                <div className="back-button-container">
+                    <button className="back-to-practice-btn" onClick={handleBackToPractice}>
+                        <span className="back-icon">←</span>
+                        <span>Quay lại trang luyện tập</span>
+                    </button>
                 </div>
             </div>
         </div>
