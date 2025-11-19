@@ -24,7 +24,7 @@ const Header = ({ user, register }) => {
             <button>Xin chào, {user.name}</button>
           ) : (
             <>
-              <button>Đăng nhập</button>
+              <button><Link to="/login">Đăng nhập</Link></button>
               <button>Đăng ký</button>
             </>
           )}
