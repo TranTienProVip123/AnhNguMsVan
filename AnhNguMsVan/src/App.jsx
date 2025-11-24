@@ -6,6 +6,7 @@ import Vocabulary from "./pages/Practice/Vocabulary/Vocabulary";
 import VocabularyQuiz from "./pages/Practice/VocabularyQuiz/VocabularyQuiz";
 import Listening from "./pages/Practice/Listening/Listening";
 import Login from './pages/Login/Login.jsx';
+import RoadmapGiaoTiep from "./pages/Course/RoadmapGiaoTiep";
 
 
 const App = () => {
@@ -15,11 +16,11 @@ const App = () => {
                 <Route path='/login' element={<Login />} />
 
                 <Route path="/" element={<Home />} />
-                <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+                <Route path="/practice" element={<Practice />} />
                 <Route path="/vocabulary" element={<Vocabulary />} />
                 <Route path="/vocabulary/:topicId/:level" element={<VocabularyQuiz />} />
                 <Route path="/listening" element={<Listening />} />
-
+                <Route path="/roadmap/giao-tiep" element={<RoadmapGiaoTiep />} />
             </Routes>
         </Router>
     );

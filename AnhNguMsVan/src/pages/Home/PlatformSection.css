@@ -1,0 +1,153 @@
+/* Free Learning Section */
+.free-learning-section {
+  padding: 50px 20px;
+  background: #fff;
+  position: relative;
+}
+
+.free-learning-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.free-learning-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.free-learning-header h2 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.free-learning-header .highlight {
+  color: #1877f2;
+  font-style: italic;
+  position: relative;
+}
+
+.free-learning-header p {
+  font-size: 25px;
+  color: #555;
+  margin: 0;
+}
+
+.platform-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.platform-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 0px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.platform-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.platform-icon {
+  width: 80px;
+  height: 80px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.platform-card.tiktok .platform-icon {
+  color: #000;
+}
+
+.platform-card.youtube .platform-icon {
+  color: #ff0000;
+}
+
+.platform-card.facebook .platform-icon {
+  color: #1877f2;
+}
+
+.platform-card:hover .platform-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.platform-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.platform-card p {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.platform-card .platform-description {
+  color: #000;
+}
+
+@media (max-width: 968px) {
+  .platform-cards {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .free-learning-header h2 {
+    font-size: 28px;
+  }
+
+  .free-learning-header p {
+    font-size: 18px;
+  }
+
+  .platform-card {
+    padding: 35px 25px;
+  }
+}
+
+@media (max-width: 600px){
+    .free-learning-section {
+    padding: 60px 15px;
+  }
+
+  .free-learning-header h2 {
+    font-size: 24px;
+  }
+
+  .free-learning-header p {
+    font-size: 16px;
+  }
+
+  .platform-card h3 {
+    font-size: 20px;
+  }
+
+  .platform-icon {
+    width: 70px;
+    height: 70px;
+  }
+
+  .platform-icon svg {
+    width: 50px;
+    height: 50px;
+  }
+}
