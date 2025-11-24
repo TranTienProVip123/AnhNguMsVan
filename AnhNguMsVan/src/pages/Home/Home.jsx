@@ -1,5 +1,4 @@
 import React, { lazy, Suspense, useState, useEffect } from "react";
-import phone from "../../assets/phone.png";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import RoadmapSection from "./RoadmapSection.jsx";
