@@ -9,7 +9,13 @@ const userSchema = new Schema(
             type: String,
             enum: ['user', 'admin'],
             default: 'user'
-        }
+        },
+        passwordResetToken: String,
+        passwordResetExpires: Date,
+        passwordChangedAt: Date,
+        isVerified: { type: Boolean, default: false },
+        emailVerificationToken: String,
+        emailVerificationExpires: Date
     },
     { timestamps: true }
 );
