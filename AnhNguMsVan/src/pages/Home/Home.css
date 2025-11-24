@@ -1,106 +1,200 @@
 .home-page {
-    margin: 0;
-    padding: 0;
-    width: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: Arial, sans-serif;
 }
 
-body, html {
-    overflow-x: hidden;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+body,
+html {
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .banner-container {
-    position: relative;
-    width: 100%;
-    height: calc(100vh - 60px);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 60px;
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60px;
 }
 
 .banner {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .banner-content {
-    position: absolute;
-    top: 0%;
-    left: 10%;
-    text-align: center;
-    padding: 32px 24px;
-    border-radius: 18px;
-    box-shadow: 0 4px 24px rgba(8, 82, 178, 0.08);
-    max-width: 90%;
+  position: absolute;
+  top: 10%;
+  left:8%;
+  text-align: center;
+  padding: 32px 24px;
+  max-width: 90%;
 }
 
 .banner-content h2 {
-    font-size: 4rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.18);
-    color: #0852B2;
+  font-size: 7rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  color: #0852b2;
 }
 
 .banner-content p {
-    font-size: 2rem;
-    margin-bottom: 30px;
-    margin-left: 30px;
-    margin-top: 10px;
-    line-height: 1.6;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    color: black;
-    max-width: 90vh;
-}
-
-.info-contact {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-right: 220px;
-}
-
-.phone {
-    width: 120px;
-    margin-bottom: 18px;
-    margin-top: 8px;
-    animation: phone-bounce 1.5s infinite alternate;
-}
-
-
-@keyframes phone-bounce {
-    0% { transform: translateY(0);}
-    100% { transform: translateY(-10px);}
+  font-size: 2rem;
+  line-height: 1.6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  color: white;
+  max-width: 100vh;
+  background: #f8a13f;
 }
 
 .banner-content h3 {
-    font-size: 2rem;
-    margin: 6px 0;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  font-size: 2rem;
+  margin: 6px 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* benefit section */
+.benefit {
+  padding: 60px 20px;
+  background-color: #fff;
+}
+
+.benefit-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.benefit-header h2 {
+  color: #fff;
+  background-color: #1e5bb8;
+  display: inline-block;
+  padding: 5px 40px;
+  font-size: 25px;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.benefit-header h2:first-child {
+  margin-bottom: 0;
+}
+
+.benefit-header h3 {
+  color: #333;
+  font-size: 20px;
+  margin-top: 12px;
+}
+
+.benefit-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.benefit-card {
+  background-color: #fff;
+  padding: 0;
+  text-align: center;
+  transition: transform 0.3s ease;
+  border-radius: 15px;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.benefit-image {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+.benefit-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.benefit-title {
+  color: #1e5bb8;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px 15px;
+  line-height: 1.4;
+}
+
+.benefit-description {
+  color: #333;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.8;
+  padding: 0 20px 25px;
+  text-align: center;
+}
+
+
+@media (min-width: 1200px) {
+  .banner-content {
+    left: 9%;
+    top: 15%;
+  }
+}
+
+@media (max-width: 768px) {
+  .benefit-header h2 {
+    font-size: 20px;
+    padding: 12px 30px;
+  }
+
+  .benefit-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .benefit-image {
+    height: 250px;
+  }
+
+  .roadmap-title h3 {
+    font-size: 20px;
+  }
+
+  .roadmap-title h4 {
+    font-size: 16px;
+  }
+
 }
 
 @media (max-width: 600px) {
-    .banner-content {
-        padding: 12px 4px;
-        max-width: 98vw;
-    }
-    .banner-content h2 {
-        font-size: 1.2rem;
-    }
-    .banner-content p {
-        font-size: 1rem;
-    }
-    .phone {
-        width: 70px;
-    }
+  .banner-content {
+    padding: 12px 4px;
+    max-width: 98vw;
+  }
+  .banner-content h2 {
+    font-size: 1.2rem;
+  }
+  .banner-content p {
+    font-size: 1rem;
+  }
+  .phone {
+    width: 70px;
+  }
+
 }

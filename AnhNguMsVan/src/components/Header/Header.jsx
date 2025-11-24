@@ -1,35 +1,68 @@
-import react from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../../assets/logo.png";
 import "./Header.css";
-const Header = ({ user, register }) => {
-  return (
-      <header>
-        <div className="header-left">
-          <Link to="/">
-            <img src={logo} alt="Logo" className="logo" />
-          </Link>
-          <nav>
-            <ul>
-              <li>Lộ trình học</li>
-              <li>Khóa học</li>
-              <li><Link to="/community">Cộng đồng</Link></li>
-              <li><Link to="/practice">Luyện tập</Link></li>
-            </ul>
-          </nav>
-        </div>
 
-        <div className="auth-buttons">
-          {user ? (
-            <button>Xin chào, {user.name}</button>
-          ) : (
-            <>
-              <button><Link to="/login">Đăng nhập</Link></button>
-              <button>Đăng ký</button>
-            </>
-          )}
-        </div>
-      </header>
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  return (
+    <header>
+      {/* Hamburger Button */}
+      <button 
+        className="hamburger" 
+        onClick={toggleMenu}
+        aria-label="Toggle menu"
+      >
+        <span className={isMenuOpen ? "active" : ""}></span>
+        <span className={isMenuOpen ? "active" : ""}></span>
+        <span className={isMenuOpen ? "active" : ""}></span>
+      </button>
+
+      {/* Logo - Căn giữa trên mobile */}
+      <div className="logo-container">
+        <Link to="/">
+          <img src="https://res.cloudinary.com/da6gk23w6/image/upload/v1763714007/logo_unkrfb.png" alt="Logo" className="logo" />
+        </Link>
+      </div>
+
+      {/* Navigation - Ẩn/hiện với hamburger */}
+      <nav className={isMenuOpen ? "nav-open" : ""}>
+        <ul>
+          <li onClick={closeMenu}>
+            <Link to="/">Trang chủ</Link>
+          </li>
+          <li onClick={closeMenu}>
+            <Link to="/about">Giới thiệu</Link>
+          </li>
+          <li onClick={closeMenu}>
+            <Link to="/roadmap/giao-tiep">Lộ trình Giao tiếp</Link>
+          </li>
+          <li onClick={closeMenu}>
+            <Link to="/roadmap/toeic">Lộ trình TOEIC</Link>
+          </li>
+          <li onClick={closeMenu}>
+            <Link to="/contact">Liên hệ</Link>
+          </li>
+        </ul>
+      </nav>
+
+      {/* Auth Buttons */}
+      <div className="auth-buttons">
+        <button>Đăng nhập</button>
+        <button>Đăng ký</button>
+      </div>
+
+      {/* Overlay khi menu mở */}
+      {isMenuOpen && <div className="overlay" onClick={closeMenu}></div>}
+    </header>
   );
 };
 

@@ -1,0 +1,188 @@
+{
+  "hero": {
+    "title": "LỘ TRÌNH HỌC GIAO TIẾP",
+    "breadcrumbs": ["Trang chủ", "Lộ trình Giao tiếp"]
+  },
+  "goals": {
+    "title": "🎯 MỤC TIÊU KHÓA HỌC",
+    "subtitle": "Học xong tự tin giao tiếp",
+    "items": [
+      {
+        "icon": "🎯",
+        "title": "Đầu ra",
+        "desc": "Học viên tự tin giao tiếp lưu loát trong các tình huống đời sống và công việc."
+      },
+      {
+        "icon": "🗣️",
+        "title": "Kỹ năng cụ thể",
+        "desc": "Nắm vững phát âm chuẩn IPA, phản xạ nhanh, sử dụng thành thạo từ vựng và mẫu câu thông dụng."
+      },
+      {
+        "icon": "💼",
+        "title": "Thực hành",
+        "desc": "Ứng dụng ngay 100% kiến thức vào các tình huống thực tế (công việc, mua sắm, du lịch, gọi điện, họp)."
+      }
+    ]
+  },
+  "audience": {
+    "title": "👥 ĐỐI TƯỢNG PHÙ HỢP",
+    "subtitle": "Khóa học này dành cho bạn nếu...",
+    "items": [
+      {
+        "icon": "🌱",
+        "title": "Người mới bắt đầu",
+        "desc": "Beginner hoặc mất căn bản tiếng Anh, muốn xây dựng nền tảng phát âm chuẩn và giao tiếp cơ bản."
+      },
+      {
+        "icon": "💼",
+        "title": "Người đi làm",
+        "desc": "Muốn nâng cao kỹ năng giao tiếp để tự tin trao đổi với đồng nghiệp, sếp hoặc khách hàng nước ngoài."
+      },
+      {
+        "icon": "🎓",
+        "title": "Học sinh, sinh viên",
+        "desc": "Muốn chuẩn bị cho du học hoặc cần Tiếng Anh giao tiếp trong môi trường quốc tế."
+      }
+    ]
+  },
+  "method": {
+    "title": "📚 PHƯƠNG PHÁP HỌC",
+    "subtitle": "Học theo lộ trình khoa học, thực hành 80% thời lượng",
+    "commitment": "Thực hành 80% thời lượng buổi học",
+    "items": [
+      {
+        "phase": "Giai đoạn 1",
+        "title": "Phát âm nền tảng",
+        "desc": "Học chuẩn Bảng phiên âm quốc tế IPA và các quy tắc nối âm, nuốt âm, trọng âm để nghe và nói tự nhiên như người bản xứ",
+        "color": "#586ed3ff"
+      },
+      {
+        "phase": "Giai đoạn 2",
+        "title": "Thực hành Đa tình huống",
+        "desc": "Học viên được đặt vào các bối cảnh giao tiếp thực tế (Role-play) từ đời sống (du lịch, mua sắm, khám bệnh) đến công việc (email, họp, phỏng vấn)",
+        "color": "#db7ce6ff"
+      },
+      {
+        "phase": "Giai đoạn 3",
+        "title": "Phản xạ & Nâng cao",
+        "desc": "Tập trung vào phản xạ nhanh (short responses), sử dụng cụm từ tự nhiên (phrasal verbs) và tổng ôn qua các buổi luyện nói tự do (free talk)",
+        "color": "#3ece6eff"
+      }
+    ]
+  },
+  "phases": [
+    {
+      "id": 1,
+      "title": "Nền Tảng Phát Âm & Giao Tiếp Cơ Bản",
+      "range": "Buổi 1 - 10",
+      "color": "#667eea",
+      "sessions": [
+        "Học bảng IPA - nguyên âm đơn",
+        "Học bảng IPA - nguyên âm đôi",
+        "Luyện âm phụ âm",
+        "Quy tắc nối âm, nuốt âm, trọng âm",
+        "Chào hỏi, giới thiệu bản thân (thì hiện tại đơn)",
+        "Hỏi thăm sức khỏe, cảm xúc, thời tiết",
+        "Số đếm, ngày tháng, giờ giấc",
+        "Đặt câu hỏi với What, Where, When, Who, How",
+        "Luyện hội thoại chào hỏi, làm quen thực tế",
+        "Kiểm tra và tổng ôn"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Giao Tiếp Đời Sống Hằng Ngày",
+      "range": "Buổi 11 - 20",
+      "color": "#f093fb",
+      "sessions": [
+        "Đi siêu thị, hỏi giá, mặc cả",
+        "Giao tiếp tại quán cà phê, tiệm ăn nhanh",
+        "Gọi món trong nhà hàng",
+        "Mua sắm ở nhà sách, tiệm bánh",
+        "Hỏi đường, chỉ đường",
+        "Di chuyển bằng taxi, xe buýt",
+        "Đặt phòng khách sạn, yêu cầu thêm dịch vụ",
+        "Đi khám bệnh, mô tả triệu chứng",
+        "Mô tả người, vật, địa điểm bằng tính từ",
+        "Gặp gỡ bạn bè, đồng nghiệp, hàng xóm"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Giao Tiếp Trong Công Việc",
+      "range": "Buổi 21 - 25",
+      "color": "#4facfe",
+      "sessions": [
+        "Giới thiệu đơn giản về công việc của mình",
+        "Đặt lịch hẹn với đồng nghiệp, khách hàng",
+        "Gọi điện công việc cơ bản",
+        "Tham gia họp ngắn (đồng ý, từ chối lịch sự)",
+        "Kiểm tra và luyện tổng hợp đời sống + công việc"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Giao Tiếp Xã Hội & Du Lịch",
+      "range": "Buổi 26 - 35",
+      "color": "#43e97b",
+      "sessions": [
+        "Chúc mừng sinh nhật, dự tiệc, lễ hội",
+        "Giao tiếp tại ngân hàng (gửi, rút tiền)",
+        "Sân bay, hải quan, nhập cảnh",
+        "Xem phim, đi chơi công viên",
+        "Nói về sở thích, thú vui",
+        "Kể về chuyến du lịch đáng nhớ",
+        "Thói quen hằng ngày (Everyday routine)",
+        "Mô tả nhà cửa, khu phố",
+        "Thảo luận phim ảnh, âm nhạc, thời trang",
+        "Kể về một sự kiện vui (Last weekend...)"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Nâng Cao & Thực Hành Chuyên Sâu",
+      "range": "Buổi 36 - 50",
+      "color": "#fa709a",
+      "sessions": [
+        "Viết email công việc cơ bản (request, inform)",
+        "Viết email xin nghỉ phép",
+        "Thuyết trình mini (giới thiệu sản phẩm, dự án, ý tưởng)",
+        "Trò chuyện lịch sự với sếp và đồng nghiệp",
+        "Giao tiếp với khách hàng nước ngoài cơ bản",
+        "Cách viết CV, chuẩn bị phỏng vấn bằng Tiếng Anh",
+        "Luyện nói theo chủ đề tự chọn (travel, shopping, food)",
+        "Luyện nghe và trả lời nhanh (short responses)",
+        "Đóng vai tình huống thực tế (role-play: order, book, complain)",
+        "Học cụm từ tự nhiên (phrasal verbs cơ bản)",
+        "Luyện phát âm nâng cao (âm nối, ngữ điệu)",
+        "Trò chuyện bằng tiếng Anh (free talk)",
+        "Phản xạ nhanh các tình huống bất ngờ",
+        "Tổng ôn tập thực tế (mock practice)",
+        "Kiểm tra trình độ + lập kế hoạch tự học tiếp"
+      ]
+    }
+  ],
+  "pricing": {
+    "title": "⏱️THỜI GIAN VÀ HỌC PHÍ",
+    "items": [
+      {
+        "icon": "⏱️",
+        "title": "Thời lượng",
+        "desc": "50 buổi học (3 buổi/tuần, 60 phút/buổi)"
+      },
+      {
+        "icon": "📅",
+        "title": "Lịch học",
+        "desc": "Linh hoạt theo lịch của bạn - Học qua Google Meet"
+      },
+      {
+        "icon": "💵",
+        "title": "Học phí",
+        "desc": "Liên hệ để nhận ưu đãi tốt nhất",
+        "note": "Bao gồm: Tài liệu học tập + Hỗ trợ 6 tháng",
+        "highlight": true
+      }
+    ]
+  },
+  "image": "https://res.cloudinary.com/da6gk23w6/image/upload/v1763629024/L%E1%BB%99_tr%C3%ACnh_h%E1%BB%8Dc_-_visual_selection_1_l8dcwx.png"
+}
