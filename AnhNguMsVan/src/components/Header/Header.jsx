@@ -1,7 +1,7 @@
-import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Header.css";
+
 const Header = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
@@ -97,8 +97,10 @@ const Header = () => {
           </>
         )}
       </div>
+
       {/* Overlay khi menu mở */}
       {isMenuOpen && <div className="overlay" onClick={closeMenu}></div>}
+
     </header>
   );
 };
