@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
 import Header from "../../../components/Header/Header.jsx";
 import "./Vocabulary.css";
 
 const Vocabulary = () => {
-  const navigate = useNavigate();
-  const { courseId } = useParams();
-  
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
