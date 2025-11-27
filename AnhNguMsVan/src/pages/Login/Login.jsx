@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, replace } from 'react-router-dom';
 import LoginForm from '../../components/Auth/LoginForm';
 import RegisterForm from '../../components/Auth/RegisterForm';
 import { useAuth } from '../../context/AuthContext';
@@ -125,9 +125,15 @@ const Login = () => {
 
       login(data); //cap nhat context va localStorage
 
-      const redirectPath = location.state?.from || "/";
+      if (data?.data?.user?.role  === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        const redirectPath = location.state?.from || "/";
+        navigate(redirectPath, { replace: true });
+      }
+      
       setLoginForm({ email: '', password: '' });
-      navigate(redirectPath, { replace: true });
+
     } catch (err) {
       setLoginError('Không thể kết nối máy chủ');
     } finally {
