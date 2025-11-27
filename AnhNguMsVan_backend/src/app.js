@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDb from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import consultationRoutes from './routes/consultationRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import errorHandler from './middleware/errorHandlers.js';
 import { config } from './config/config.js';
 
@@ -14,6 +16,8 @@ app.use(express.json());
 
 connectDb();
 app.use('/api/auth', authRoutes);
+app.use('/api/consultations', consultationRoutes);
+app.use('/api/admin', adminRoutes);
 app.use(errorHandler);
 
 const PORT = config.port || 4000;

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./ConsultationForm.css";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const ConsultationForm = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -38,19 +40,32 @@ const ConsultationForm = () => {
     }
 
     try {
-      // TODO: Gửi dữ liệu đến server/API
-      // const response = await fetch('/api/consultation', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await fetch(`${BASE_URL}/api/consultations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+        }),
+      });
 
-      // Giả lập gửi form
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          setSubmitMessage(data.errors[0].message || "Gửi yêu cầu thất bại.");
+        } else {
+          setSubmitMessage(data.message || "Gửi yêu cầu thất bại.");
+        }
+        return;
+      }
 
-      setSubmitMessage("✓ Gửi thành công! Ms Vân sẽ liên hệ bạn sớm nhất.");
+      setSubmitMessage("Gửi thành công! Ms Vân sẽ liên hệ bạn sớm nhất.");
       setFormData({ name: "", phone: "" });
+      setTimeout(() => setSubmitMessage(""), 3000);
     } catch (error) {
+      console.error("Send consultation error:", error);
       setSubmitMessage("Có lỗi xảy ra. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
@@ -144,9 +159,8 @@ const ConsultationForm = () => {
 
             {submitMessage && (
               <div
-                className={`submit-message ${
-                  submitMessage.includes("✓") ? "success" : "error"
-                }`}
+                className={`submit-message ${submitMessage.includes("✓") ? "success" : "error"
+                  }`}
               >
                 {submitMessage}
               </div>
