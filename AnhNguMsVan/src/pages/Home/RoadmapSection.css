@@ -262,7 +262,7 @@
 
 .close-zoom-btn {
   position: absolute;
-  top: -5px;
+  top:  -45px;
   right: -5px;
   color: #333;
   border: none;
@@ -291,6 +291,21 @@
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
 }
 
+@media (max-width: 1024px) {
+    .close-zoom-btn {
+    top: 10px !important;
+    right: 10px !important;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  
+  .zoomed-image {
+    max-width: 90vw;
+  }
+}
+
+
 @media (max-width: 900px) {
   .roadmap-card {
     grid-template-columns: 1fr;
@@ -312,7 +327,7 @@
 }
 
 @media (max-width: 768px) {
-    .roadmap-tabs {
+  .roadmap-tabs {
     flex-direction: column;
   }
 

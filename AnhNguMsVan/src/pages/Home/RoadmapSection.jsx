@@ -14,10 +14,9 @@ const RoadmapSection = () => {
       title: "Học giao tiếp",
       subtitle: "Chinh phục giao tiếp tự tin sau 50 buổi - 5 cấp bật",
       highlights: [
-        "50 buổi học trực tuyến 1-1",
-        "5 cấp độ từ cơ bản đến nâng cao",
-        "Lộ trình cá nhân hóa riêng cho bạn",
-        "Hỗ trợ xuyên suốt trong suốt khóa học"
+        "Chặng 1: Nền tảng & Giao tiếp Sống còn (Buổi 1 - 17)",
+        "Chặng 2: Giao tiếp Đời sống & Công việc (Buổi 18 - 35)",
+        "Chặng 3: Giao tiếp Chuyên nghiệp & Hoàn thiện Kỹ năng (Buổi 36 - 50)",
       ],
       link: "/roadmap/giao-tiep"
     },

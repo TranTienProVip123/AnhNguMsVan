@@ -1,18 +1,73 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
-import bannerPractice from "../../assets/practice_banner.png";
+import Footer from "../../components/Footer/Footer.jsx";
 import "./Practice.css";
 
 const Practice = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleVocabularyClick = () => {
-    navigate("/vocabulary");
+  const vocabularyCourses = [
+    {
+      id: 1,
+      title: "1000 từ tiếng anh thông dụng",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/1000_common_words_sample.png",
+      students: "10,890 lượt học",
+      topics: "20 chủ đề",
+      path: "/vocabulary/common-1000"
+    },
+    {
+      id: 2,
+      title: "Từ vựng giao tiếp",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/conversation_vocab_sample.png",
+      students: "10,890 lượt học",
+      topics: "20 chủ đề",
+      path: "/vocabulary/conversation"
+    },
+    {
+      id: 3,
+      title: "1000 từ tiếng anh thông dụng",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/1000_common_words_sample.png",
+      students: "10,890 lượt học",
+      topics: "20 chủ đề",
+      path: "/vocabulary/common-1000-2"
+    }
+  ];
+
+  const toeicCourses = [
+    {
+      id: 4,
+      title: "1000 từ vựng TOEIC cơ bản",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/toeic_basic_sample.png",
+      students: "8,500 lượt học",
+      topics: "15 chủ đề",
+      path: "/vocabulary/toeic-basic"
+    },
+    {
+      id: 5,
+      title: "Từ vựng TOEIC nâng cao",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/toeic_advanced_sample.png",
+      students: "6,200 lượt học",
+      topics: "18 chủ đề",
+      path: "/vocabulary/toeic-advanced"
+    },
+    {
+      id: 6,
+      title: "TOEIC Part 1-4 Vocabulary",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/toeic_listening_sample.png",
+      students: "7,800 lượt học",
+      topics: "12 chủ đề",
+      path: "/vocabulary/toeic-listening"
+    }
+  ];
+
+  const handleCourseClick = (path) => {
+    navigate(path);
   };
 
-  const handleListeningClick = () => {
-    navigate("/listening");
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
   };
 
   return (
@@ -20,85 +75,158 @@ const Practice = () => {
       <Header />
 
       <div className="practice-page">
-        <div className="banner-practice-container">
-          <img src={bannerPractice} alt="Banner Practice" />
-          <div className="banner-practice">
-            <h1>NÂNG CAO KỸ NĂNG TIẾNG ANH CỦA BẠN</h1>
-            <h2>
-              Hàng trăm bài tập từ vựng và nghe hiểu được thiết kế để giúp bạn
-              tiến bộ mỗi ngày.
-            </h2>
-            <button>Bắt Đầu Luyện Tập Ngay →</button>
+        {/* Hero Section + Info Box */}
+        <div className="practice-container">
+          <div className="practice-header-wrapper">
+            <div className="practice-hero-text">
+              <h1>Học từ vựng tiếng Anh</h1>
+              <p className="practice-subtitle">
+                Học từ vựng hiệu quả với phương pháp Lặp lại ngắt quãng + Gợi nhớ chủ động
+              </p>
+            </div>
+
+            <div className="info-box-trigger" onClick={toggleModal}>
+              <h3>
+                <span className="info-icon">💡</span>
+                Spaced Repetition + Active Recall là gì?
+              </h3>
+              <span className="click-hint">Click để xem chi tiết</span>
+            </div>
           </div>
         </div>
 
-        <div className="practice-section">
-          <h2 className="section-title">Chọn Luyện Tập Kỹ Năng</h2>
+        {/* Modal Popup */}
+        {isModalOpen && (
+          <div className="modal-overlay" onClick={toggleModal}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={toggleModal}>✕</button>
+              
+              <h2 className="modal-title">
+                <span className="modal-icon">💡</span>
+                Phương pháp học hiệu quả
+              </h2>
 
-          <div className="practice-cards">
-            {/* Card Từ Vựng */}
-            <div
-              className="practice-card vocabulary-card"
-              onClick={handleVocabularyClick}
-            >
-              <div className="card-icon vocabulary-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z" />
-                </svg>
-              </div>
-              <div className="card-content">
-                <h3>
-                  Bài Tập Từ Vựng
-                  <br />
-                  (Vocabulary)
-                </h3>
-                <p>
-                  Củng cố và mở rộng kho từ vựng tiếng Anh của bạn thông qua 18
-                  chủ đề quan trọng nhất, phân loại theo cấp độ.
-                </p>
-                <button className="practice-btn vocabulary-btn">
-                  Luyện Từ Vựng Ngay
-                </button>
+              <div className="modal-body">
+                <div className="method-item">
+                  <h3>🔄 Spaced Repetition (Lặp lại ngắt quãng)</h3>
+                  <p>
+                    Phương pháp ôn tập từ vựng theo khoảng thời gian tăng dần để tối ưu hóa trí nhớ dài hạn:
+                  </p>
+                  <ul>
+                    <li>📅 <strong>Ngày 1:</strong> Học từ mới lần đầu</li>
+                    <li>📅 <strong>Ngày 2:</strong> Ôn lại lần 1 (sau 1 ngày)</li>
+                    <li>📅 <strong>Ngày 5:</strong> Ôn lại lần 2 (sau 3 ngày)</li>
+                    <li>📅 <strong>Ngày 12:</strong> Ôn lại lần 3 (sau 1 tuần)</li>
+                    <li>📅 <strong>Ngày 42:</strong> Ôn lại lần 4 (sau 1 tháng)</li>
+                  </ul>
+                  <p className="highlight-text">
+                    ✨ Kết quả: Ghi nhớ từ vựng vào bộ nhớ dài hạn, giảm quên lãng xuống 90%
+                  </p>
+                </div>
+
+                <div className="method-item">
+                  <h3>🧠 Active Recall (Gợi nhớ chủ động)</h3>
+                  <p>
+                    Thay vì đọc lại nghĩa từ (học thụ động), bạn sẽ:
+                  </p>
+                  <ul>
+                    <li>👁️ Nhìn từ tiếng Anh</li>
+                    <li>🤔 Tự hồi tưởng nghĩa tiếng Việt</li>
+                    <li>✅ Kiểm tra đáp án</li>
+                  </ul>
+                  <p className="highlight-text">
+                    ✨ Kết quả: Não bộ ghi nhớ sâu và lâu hơn gấp 5 lần so với học thụ động
+                  </p>
+                </div>
+
+                <div className="method-combine">
+                  <h3>🎯 Kết hợp 2 phương pháp = Siêu hiệu quả</h3>
+                  <p>
+                    Hệ thống sẽ tự động nhắc bạn ôn tập đúng thời điểm, với phương pháp gợi nhớ chủ động.
+                    Chỉ cần học đều 15 phút/ngày, bạn sẽ nhớ từ vựng suốt đời!
+                  </p>
+                </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Card Nghe Hiểu */}
-            <div
-              className="practice-card listening-card"
-              onClick={handleListeningClick}
-            >
-              <div className="card-icon listening-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 3C7.03 3 3 7.03 3 12v5c0 1.66 1.34 3 3 3h1c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2H5c0-3.86 3.14-7 7-7s7 3.14 7 7h-2c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h1c1.66 0 3-1.34 3-3v-5c0-4.97-4.03-9-9-9z" />
-                </svg>
+        {/* Vocabulary Section */}
+        <div className="practice-container">
+          <div className="section-header">
+            <h2 className="section-title">Từ vựng tiếng Anh thông dụng</h2>
+          </div>
+
+          <div className="courses-grid">
+            {vocabularyCourses.map((course) => (
+              <div key={course.id} className="course-card">
+                <div className="course-image">
+                  <img src={course.image} alt={course.title} />
+                </div>
+                <div className="course-content">
+                  <h3 className="course-title">{course.title}</h3>
+                  <div className="course-stats">
+                    <span className="stat-item">
+                      <span className="stat-icon">👥</span>
+                      {course.students}
+                    </span>
+                    <span className="stat-item">
+                      <span className="stat-icon">📚</span>
+                      {course.topics}
+                    </span>
+                  </div>
+                  <button
+                    className="start-btn"
+                    onClick={() => handleCourseClick(course.path)}
+                  >
+                    Bắt đầu học
+                  </button>
+                </div>
               </div>
-              <div className="card-content">
-                <h3>
-                  Bài Tập Nghe Hiểu
-                  <br />
-                  (Listening)
-                </h3>
-                <p>
-                  Rèn luyện khả năng nghe và nắm bắt thông tin nhanh chóng với 3
-                  yếu tố: Trình độ, Chủ đề và Kỹ năng chuyên sâu.
-                </p>
-                <button className="practice-btn listening-btn">
-                  Luyện Nghe Hiểu Ngay
-                </button>
+            ))}
+          </div>
+        </div>
+
+        {/* TOEIC Section */}
+        <div className="practice-container">
+          <div className="section-header">
+            <h2 className="section-title">Toeic</h2>
+          </div>
+
+          <div className="courses-grid">
+            {toeicCourses.map((course) => (
+              <div key={course.id} className="course-card">
+                <div className="course-image">
+                  <img src={course.image} alt={course.title} />
+                </div>
+                <div className="course-content">
+                  <h3 className="course-title">{course.title}</h3>
+                  <div className="course-stats">
+                    <span className="stat-item">
+                      <span className="stat-icon">👥</span>
+                      {course.students}
+                    </span>
+                    <span className="stat-item">
+                      <span className="stat-icon">📚</span>
+                      {course.topics}
+                    </span>
+                  </div>
+                  <button
+                    className="start-btn"
+                    onClick={() => handleCourseClick(course.path)}
+                  >
+                    Bắt đầu học
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 };
+
 export default Practice;

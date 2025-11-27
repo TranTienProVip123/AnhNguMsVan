@@ -383,9 +383,8 @@
   backdrop-filter: blur(10px);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 844px) {
   .gallery-grid {
-    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
   .lightbox-nav {
@@ -434,17 +433,26 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .gallery-header h2 {
+    font-size: 16px;
+    padding: 12px 30px;
+  }
+
+  .gallery-header p {
+    font-size: 17px;
+  }
+
   .feedback-grid {
-    grid-template-columns: repeat(2, 1fr);
+   grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   }
 
   .feedback-header h2 {
-    font-size: 22px;
+    font-size: 16px;
     padding: 12px 30px;
   }
 
   .feedback-header p {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .feedback-carousel-container {

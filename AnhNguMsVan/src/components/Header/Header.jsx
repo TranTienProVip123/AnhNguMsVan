@@ -3,26 +3,25 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./Header.css";
 
+
 const Header = () => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handlePracticeClick = (e) => {
-    e.preventDefault();
+  // const handlePracticeClick = (e) => {
+  //   e.preventDefault();
 
-    if (!token) {
-      alert("Bạn cần đăng nhập để sử dụng tính năng Luyện tập nhé!");
-
-      // luu lai trang hien tai de login xong quay lai
-      navigate("/login", { state: { from: "/practice" } });
-    } else {
-      navigate("/practice");
-    }
-  };
+  //   if (!token) {
+  //     alert("Bạn cần đăng nhập để sử dụng tính năng Luyện tập nhé!");
+  //     navigate("/login", { state: { from: "/practice" } });
+  //   } else {
+  //     navigate("/practice");
+  //   }
+  // };
 
   const handleLogout = () => {
-    logout(); //dung context de xoa token va user khoi localStorage khi logout
+    logout();
     navigate("/");
   };
 
@@ -33,13 +32,14 @@ const Header = () => {
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
+
   return (
     <header>
-      {/* Hamburger Button */}
+      {/* Hamburger Button - Chỉ hiện trên mobile */}
       <button
-        className="hamburger"
+        className={`hamburger ${isMenuOpen ? "menu-open" : ""}`}
         onClick={toggleMenu}
-        aria-label="Toggle menu"
+        aria-label={isMenuOpen ? "Close menu" : "Open menu"}
       >
         <span className={isMenuOpen ? "active" : ""}></span>
         <span className={isMenuOpen ? "active" : ""}></span>
@@ -70,14 +70,20 @@ const Header = () => {
             <Link to="/roadmap/giao-tiep">Lộ trình Giao tiếp</Link>
           </li>
           <li onClick={closeMenu}>
-            <Link to="/roadmap/toeic">Lộ trình TOEIC</Link>
-          </li>
-          <li onClick={closeMenu}>
             <Link to="/contact">Liên hệ</Link>
           </li>
           <li onClick={closeMenu}>
             <Link to="/practice">Luyện tập</Link>
           </li>
+
+          {/* Nút Đăng ký trong sidebar - CHỈ hiện trên mobile <500px */}
+          {!user && (
+            <li className="nav-register-btn" onClick={closeMenu}>
+              <Link to="/login?mode=register">
+                <button className="mobile-register-btn">Đăng ký</button>
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
 
@@ -90,18 +96,19 @@ const Header = () => {
         ) : (
           <>
             <Link to="/login">
-              <button>Đăng nhập</button>
+              <button className="login-button">Đăng nhập</button>
             </Link>
             <Link to="/login?mode=register">
-              <button>Đăng ký</button>
+              <button className="register-button">Đăng ký</button>
             </Link>
           </>
         )}
       </div>
 
-      {/* Overlay khi menu mở */}
-      {isMenuOpen && <div className="overlay" onClick={closeMenu}></div>}
-
+      {/* Overlay - Chỉ hiện khi menu mở */}
+      {isMenuOpen &&
+        <div className="overlay" onClick={closeMenu}></div>
+      }
     </header>
   );
 };

@@ -10,11 +10,11 @@ const StudentGallery = lazy(() => import("./StudentGallery.jsx"));
 
 const Home = () => {
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 810);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 820);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 810);
+      setIsMobile(window.innerWidth <= 820);
     };
 
     window.addEventListener("resize", handleResize);
@@ -39,7 +39,7 @@ const Home = () => {
   ];
 
   const bannerUrl = isMobile
-    ? "https://res.cloudinary.com/da6gk23w6/image/upload/v1763804654/banner_Mobile_xahzxr.png"
+    ? "https://res.cloudinary.com/da6gk23w6/image/upload/v1764049637/banner_tr%E1%BA%AFng_4_u1zxnk.jpg"
     : "https://res.cloudinary.com/da6gk23w6/image/upload/v1763543981/bannerMsVan_kmg9k2.png";
 
   return (
@@ -50,10 +50,10 @@ const Home = () => {
       <div className="banner-container">
         <img src={bannerUrl} alt="Banner" className="banner" />
         <div className="banner-content">
-          <h2>VỮNG GỐC<br /> PHÁT TRIỂN</h2>
-          <p>
+          <h1>VỮNG GỐC<br /> PHÁT TRIỂN</h1>
+          <h4>
             TỰ TIN NÓI TIẾNG ANH
-          </p>
+          </h4>
         </div>
       </div>
 

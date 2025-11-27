@@ -1,309 +1,230 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header.jsx";
-import {
-  LEVELS,
-  getLevelColor,
-  getLevelInfo,
-} from "../../Practice/Vocabulary/Levels.jsx";
 import "./Vocabulary.css";
 
 const Vocabulary = () => {
-  const navigate = useNavigate();
-  const [showLevelGuide, setShowLevelGuide] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(null);
 
+  // Mock data - Thay bằng API call thực tế
   const topics = [
     {
       id: 1,
-      title: "Daily Life – Cuộc sống hằng ngày",
-      subtitle: "Routine, habits, chores...",
+      name: "Gia đình",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/family_topic.png",
+      progress: 50,
+      totalWords: 50,
+      learnedWords: 25,
+      words: [
+        {
+          english: "family",
+          vietnamese: "gia đình",
+          definition: "Định nghĩa tiếng Anh: My house have 4 people in home",
+          meaning: "Định nghĩa: ngôi nhà có các thành viên trong nhà",
+          example: "Example: My family there is 5 people",
+          exampleVN: "Ví dụ: 1 gia đình có các thành viên trong đó",
+          image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/family_word.png"
+        },
+        {
+          english: "father",
+          vietnamese: "bố",
+          definition: "A male parent",
+          meaning: "Cha của một người",
+          example: "My father is a teacher",
+          exampleVN: "Bố tôi là một giáo viên",
+          image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/father_word.png"
+        }
+      ]
     },
     {
       id: 2,
-      title: "Work & Office – Công sở & công việc",
-      subtitle: "Meeting, deadline, career...",
+      name: "Công việc",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/work_topic.png",
+      progress: 50,
+      totalWords: 50,
+      learnedWords: 25,
+      words: []
     },
     {
       id: 3,
-      title: "Travel & Transportation – Du lịch & phương tiện",
-      subtitle: "Airport, hotel, taxi...",
+      name: "Du lịch",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/travel_topic.png",
+      progress: 50,
+      totalWords: 50,
+      learnedWords: 25,
+      words: []
     },
     {
       id: 4,
-      title: "Food & Dining – Ẩm thực & ăn uống",
-      subtitle: "Restaurant, recipe, ingredients...",
-    },
-    {
-      id: 5,
-      title: "Health & Fitness – Sức khỏe & thể hình",
-      subtitle: "Exercise, nutrition, wellness...",
-    },
-    {
-      id: 6,
-      title: "Education – Giáo dục",
-      subtitle: "School, university, learning...",
-    },
-    {
-      id: 7,
-      title: "Technology – Công nghệ",
-      subtitle: "Internet, software, devices...",
-    },
-    {
-      id: 8,
-      title: "Shopping – Mua sắm",
-      subtitle: "Store, price, discount...",
-    },
-    {
-      id: 9,
-      title: "Entertainment – Giải trí",
-      subtitle: "Movies, music, games...",
-    },
-    {
-      id: 10,
-      title: "Nature & Environment – Thiên nhiên & môi trường",
-      subtitle: "Weather, climate, animals...",
-    },
-    {
-      id: 11,
-      title: "Family & Relationships – Gia đình & mối quan hệ",
-      subtitle: "Parents, siblings, friends...",
-    },
-    {
-      id: 12,
-      title: "Money & Finance – Tiền bạc & tài chính",
-      subtitle: "Bank, investment, budget...",
-    },
-    {
-      id: 13,
-      title: "Housing – Nhà ở",
-      subtitle: "Apartment, furniture, rent...",
-    },
-    {
-      id: 14,
-      title: "Communication – Giao tiếp",
-      subtitle: "Phone, email, social media...",
-    },
-    {
-      id: 15,
-      title: "Emotions & Feelings – Cảm xúc",
-      subtitle: "Happy, sad, angry...",
-    },
-    {
-      id: 16,
-      title: "Hobbies & Interests – Sở thích",
-      subtitle: "Reading, painting, sports...",
-    },
-    {
-      id: 17,
-      title: "Culture & Traditions – Văn hóa & truyền thống",
-      subtitle: "Festivals, customs, heritage...",
-    },
-    {
-      id: 18,
-      title: "Social Issues – Vấn đề xã hội",
-      subtitle: "Poverty, equality, rights...",
-    },
-    {
-      id: 19,
-      title: "Business & Marketing – Kinh doanh & marketing",
-      subtitle: "Advertising, sales, strategy...",
-    },
-    {
-      id: 20,
-      title: "Jobs & Careers – Nghề nghiệp & định hướng",
-      subtitle: "Job search, interviews, career development...",
-    },
-    {
-      id: 21,
-      title: "TOEIC Vocabulary – Chủ đề theo TOEIC",
-      subtitle: "Business, office routines, travel, marketing, finance...",
-    },
-    {
-      id: 22,
-      title: "IELTS Vocabulary – Chủ đề học thuật",
-      subtitle: "Education, environment, technology, society, global issues...",
-    },
-    {
-      id: 23,
-      title: "Grammar-based Vocabulary – Từ loại, collocations, phrasal verbs",
-      subtitle:
-        "Parts of speech, common collocations, phrasal verbs in context...",
-    },
+      name: "Khách sạn",
+      image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/hotel_topic.png",
+      progress: 50,
+      totalWords: 50,
+      learnedWords: 25,
+      words: []
+    }
   ];
 
-  const handleTopicCardClick = (topic) => {
-    setSelectedTopic(topic);
+  const currentTopic = topics[currentTopicIndex];
+  const currentWord = currentTopic.words[currentWordIndex];
+  const totalWordsInTopic = currentTopic.words.length;
+
+  const handleCheckAnswer = () => {
+    if (userAnswer.trim().toLowerCase() === currentWord.vietnamese.toLowerCase()) {
+      setIsCorrect(true);
+    } else {
+      setIsCorrect(false);
+    }
+    setShowAnswer(true);
   };
 
-  const handleLevelClick = (topicId, level) => {
-    console.log(`Selected Topic ${topicId}, Level ${level}`);
-    navigate(`/vocabulary/${topicId}/${level}`);
-    setSelectedTopic(null); // Đóng modal
+  const handleDontKnow = () => {
+    setShowAnswer(true);
+    setIsCorrect(false);
   };
 
-  const handleBackToPractice = () => {
-    navigate("/practice");
+  const handleNextWord = () => {
+    if (currentWordIndex < totalWordsInTopic - 1) {
+      setCurrentWordIndex(currentWordIndex + 1);
+    } else {
+      // Chuyển sang topic tiếp theo
+      if (currentTopicIndex < topics.length - 1) {
+        setCurrentTopicIndex(currentTopicIndex + 1);
+        setCurrentWordIndex(0);
+      } else {
+        alert("Bạn đã hoàn thành tất cả các từ!");
+      }
+    }
+    setUserAnswer("");
+    setShowAnswer(false);
+    setIsCorrect(null);
+  };
+
+  const handleTopicClick = (topicIndex) => {
+    setCurrentTopicIndex(topicIndex);
+    setCurrentWordIndex(0);
+    setUserAnswer("");
+    setShowAnswer(false);
+    setIsCorrect(null);
   };
 
   return (
     <>
       <Header />
-
       <div className="vocabulary-page">
-        <div className="vocabulary-content">
-          <div className="vocabulary-header">
-            <h1>Chọn Chủ Đề Từ Vựng</h1>
-            <p>
-              23 Chủ đề quan trọng nhất, từ cấp độ A1 (Cơ bản) đến C2 (Thành
-              thạo).
-            </p>
-          </div>
-
-          {/* Nút xem hướng dẫn - Click để mở modal */}
-          <div className="levels-legend">
-            <button
-              className="guide-button"
-              onClick={() => setShowLevelGuide(true)}
-            >
-              <span className="legend-icon">ℹ️</span>
-              <span>Xem hướng dẫn các cấp độ (CEFR)</span>
-            </button>
-          </div>
-
-          {/* Modal hiển thị chi tiết levels */}
-          {showLevelGuide && (
-            <div
-              className="level-guide-modal"
-              onClick={() => setShowLevelGuide(false)}
-            >
-              <div
-                className="modal-content"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="modal-header">
-                  <h3>📚 Hướng dẫn các cấp độ (CEFR)</h3>
-                  <button
-                    className="close-btn"
-                    onClick={() => setShowLevelGuide(false)}
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="modal-body">
-                  {LEVELS.map((level) => {
-                    const info = getLevelInfo(level);
-                    return (
-                      <div key={level} className="level-guide-item">
-                        <div
-                          className="level-badge"
-                          style={{ backgroundColor: getLevelColor(level) }}
-                        >
-                          {level}
-                        </div>
-                        <div className="level-info">
-                          <h4>{info.name}</h4>
-                          <p>{info.description}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+        <div className="vocabulary-container">
+          {/* Left Panel - Practice Area */}
+          <div className="practice-panel">
+            {/* Header với topic name và progress */}
+            <div className="practice-header">
+              <h2 className="topic-name">{currentTopic.name}</h2>
+              <div className="word-counter">
+                câu {currentWordIndex + 1}/{totalWordsInTopic}
               </div>
             </div>
-          )}
 
-          {/* Modal chọn level khi click vào topic card */}
-          {selectedTopic && (
-            <div
-              className="level-guide-modal"
-              onClick={() => setSelectedTopic(null)}
-            >
-              <div
-                className="modal-content topic-level-modal"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="modal-header">
-                  <div>
-                    <h3>{selectedTopic.title}</h3>
-                    <p className="modal-subtitle">{selectedTopic.subtitle}</p>
-                  </div>
-                  <button
-                    className="close-btn"
-                    onClick={() => setSelectedTopic(null)}
-                  >
-                    ✕
-                  </button>
+            {/* Progress Bar */}
+            <div className="progress-bar-container">
+              <div 
+                className="progress-bar-fill" 
+                style={{ width: `${((currentWordIndex + 1) / totalWordsInTopic) * 100}%` }}
+              ></div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="practice-content">
+              {/* Word Image */}
+              <div className="word-image-container">
+                <img src={currentWord.image} alt={currentWord.english} />
+              </div>
+
+              {/* Word Information */}
+              <div className="word-info">
+                <h3 className="word-title">{currentWord.english}</h3>
+                <p className="word-type">Danh từ</p>
+
+                {/* Definitions */}
+                <div className="word-definitions">
+                  <p className="definition-en">{currentWord.definition}</p>
+                  <p className="definition-vn">{currentWord.meaning}</p>
+                  <p className="example-en">{currentWord.example}</p>
+                  <p className="example-vn">{currentWord.exampleVN}</p>
                 </div>
-                <div className="modal-body">
-                  <h4 className="select-level-title">
-                    Chọn cấp độ bạn muốn luyện tập:
-                  </h4>
-                  <div className="modal-levels-grid">
-                    {LEVELS.map((level) => {
-                      const info = getLevelInfo(level);
-                      return (
-                        <button
-                          key={level}
-                          className="modal-level-btn"
-                          style={{ backgroundColor: getLevelColor(level) }}
-                          onClick={() =>
-                            handleLevelClick(selectedTopic.id, level)
-                          }
-                        >
-                          <span className="modal-level-name">{level}</span>
-                          <span className="modal-level-desc">{info.name}</span>
+
+                {/* Answer Input */}
+                <div className="answer-section">
+                  <div className="answer-input-group">
+                    <input
+                      type="password"
+                      value={userAnswer}
+                      onChange={(e) => setUserAnswer(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && !showAnswer && handleCheckAnswer()}
+                      placeholder="Nhập từ tiếng Anh"
+                      disabled={showAnswer}
+                      className={showAnswer ? (isCorrect ? 'correct' : 'incorrect') : ''}
+                    />
+                    <button className="hint-btn">
+                      <span className="hint-icon">💡</span>
+                      gợi ý
+                    </button>
+                  </div>
+
+                  {showAnswer && (
+                    <div className={`answer-feedback ${isCorrect ? 'correct' : 'incorrect'}`}>
+                      {isCorrect ? '✓ Chính xác!' : `✗ Đáp án: ${currentWord.vietnamese}`}
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="action-buttons">
+                    {!showAnswer ? (
+                      <>
+                        <button className="btn-dont-know" onClick={handleDontKnow}>
+                          <span>🤷</span>
+                          không biết
                         </button>
-                      );
-                    })}
+                        <button className="btn-check" onClick={handleCheckAnswer}>
+                          <span>🔍</span>
+                          kiểm tra đáp án
+                        </button>
+                      </>
+                    ) : (
+                      <button className="btn-next" onClick={handleNextWord}>
+                        Tiếp theo →
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Hiển thị lưới các chủ đề */}
-          <div className="topics-grid">
-            {topics.map((topic) => (
-              <div
-                key={topic.id}
-                className="topic-card"
-                onClick={() => handleTopicCardClick(topic)}
-              >
-                <div className="topic-header">
-                  <span className="topic-number">{topic.id}.</span>
-                  <h3 className="topic-title">{topic.title}</h3>
-                </div>
-                <p className="topic-subtitle">{topic.subtitle}</p>
-
-                <div className="topic-levels">
-                  {LEVELS.map((level) => {
-                    const info = getLevelInfo(level);
-                    return (
-                      <button
-                        key={level}
-                        className="level-btn"
-                        style={{ backgroundColor: getLevelColor(level) }}
-                        onClick={() => handleLevelClick(topic.id, level)}
-                        title={`${info.name}: ${info.description}`}
-                      >
-                        {level}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
           </div>
-          {/* Nút quay lại */}
-          <div className="back-button-container">
-            <button
-              className="back-to-practice-btn"
-              onClick={handleBackToPractice}
-            >
-              <span className="back-icon">←</span>
-              <span>Quay lại trang luyện tập</span>
-            </button>
+
+          {/* Right Panel - Topics List */}
+          <div className="topics-panel">
+            <h3 className="topics-panel-title">Danh sách chủ đề</h3>
+            <div className="topics-scroll">
+              {topics.map((topic, index) => (
+                <div
+                  key={topic.id}
+                  className={`topic-item ${index === currentTopicIndex ? 'active' : ''}`}
+                  onClick={() => handleTopicClick(index)}
+                >
+                  <div className="topic-image">
+                    <img src={topic.image} alt={topic.name} />
+                  </div>
+                  <div className="topic-info">
+                    <h4 className="topic-title">{topic.name}</h4>
+                    <div className="topic-stats">
+                      <span className="topic-progress">{topic.progress}%</span>
+                      <span className="topic-words">{topic.learnedWords}/{topic.totalWords} từ</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

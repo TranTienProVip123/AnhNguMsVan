@@ -20,7 +20,6 @@ header {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* Hamburger Menu - Ẩn mặc định */
 .hamburger {
     display: none;
     flex-direction: column;
@@ -30,6 +29,7 @@ header {
     cursor: pointer;
     padding: 8px;
     z-index: 102;
+    transition: all 0.3s ease;
 }
 
 .hamburger span {
@@ -41,7 +41,7 @@ header {
 }
 
 .hamburger span.active:nth-child(1) {
-    transform: rotate(45deg) translate(7px, 7px);
+    transform: translateY(8.5px) rotate(45deg);
 }
 
 .hamburger span.active:nth-child(2) {
@@ -49,7 +49,7 @@ header {
 }
 
 .hamburger span.active:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
+    transform: translateY(-8px) rotate(-45deg);
 }
 
 /* Logo Container */
@@ -120,6 +120,11 @@ nav ul li:hover::after {
     width: 100%;
 }
 
+/* Ẩn nút Đăng ký trong sidebar trên desktop */
+.nav-register-btn {
+    display: none;
+}
+
 /* Auth buttons */
 .auth-buttons {
     display: flex;
@@ -137,24 +142,24 @@ nav ul li:hover::after {
     transition: all 0.3s ease;
 }
 
-.auth-buttons button:first-child {
+.auth-buttons .login-button {
     background: transparent;
     color: #0852B2;
     border: 2px solid #0852B2;
 }
 
-.auth-buttons button:first-child:hover {
+.auth-buttons .login-button:hover {
     background: #0852B2;
     color: #fff;
 }
 
-.auth-buttons button:last-child {
+.auth-buttons .register-button {
     background: #0852B2;
     color: #fff;
     border: 2px solid #0852B2;
 }
 
-.auth-buttons button:last-child:hover {
+.auth-buttons .register-button:hover {
     background: #063d85;
     border-color: #063d85;
 }
@@ -164,10 +169,16 @@ nav ul li:hover::after {
     display: none;
 }
 
-/* Responsive - Mobile Menu (≤810px) */
-@media (max-width: 810px) {
+@media (max-width: 1200px) {
     header {
-        padding: 0 20px;
+        padding: 0 50px;
+    }
+}
+
+@media (max-width: 957px) {
+    header {
+        padding: 0 15px;
+        height: 50px;
         justify-content: space-between;
     }
 
@@ -175,6 +186,16 @@ nav ul li:hover::after {
     .hamburger {
         display: flex;
         order: 1;
+        position: relative;
+        left: 0;
+    }
+
+    /* Khi menu mở - Hamburger chuyển sang bên phải */
+    .hamburger.menu-open {
+        position: fixed;
+        left: 230px;
+        top: 10px;
+        z-index: 103;
     }
 
     /* Logo căn giữa */
@@ -189,14 +210,14 @@ nav ul li:hover::after {
         width: 60px;
     }
 
-    /* Auth buttons ở bên phải */
+    /* Auth buttons ở bên phải - GIỮ NGUYÊN */
     .auth-buttons {
         order: 3;
         gap: 8px;
     }
 
     .auth-buttons button {
-        padding: 6px 12px;
+        padding: 10px 12px;
         font-size: 0.85rem;
     }
 
@@ -206,12 +227,12 @@ nav ul li:hover::after {
         top: 0px;
         left: -100%;
         width: 280px;
-        height: calc(110vh - 60px);
+        height: 100vh;
         background: #fff;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        align-items: flex-start;
         transition: left 0.3s ease;
         z-index: 101;
-        overflow-y: auto;
+        padding-top: 20px;
     }
 
     nav.nav-open {
@@ -221,7 +242,7 @@ nav ul li:hover::after {
     nav ul {
         flex-direction: column;
         gap: 0;
-        padding: 20px 0;
+        margin: 0;
     }
 
     nav ul li {
@@ -242,34 +263,65 @@ nav ul li:hover::after {
     .overlay {
         display: block;
         position: fixed;
-        top: 60px;
+        top: 0;
         left: 0;
         width: 100%;
-        height: calc(100vh - 60px);
+        height: 100vh;
         background: rgba(0, 0, 0, 0.5);
         z-index: 100;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 500px) {
     header {
-        padding: 0 15px;
+        padding: 0 10px;
     }
 
-    .logo {
-        width: 50px;
+    /* Ẩn nút Đăng ký ngoài header */
+    .auth-buttons .register-button {
+        display: none;
     }
 
-    .auth-buttons button:first-child {
-        display: none; /* Ẩn nút Đăng nhập trên màn hình rất nhỏ */
+    /* Hiển thị nút Đăng ký trong sidebar */
+    .nav-register-btn {
+        display: block !important;
+        border-top: 2px solid #e0e0e0;
+        margin-top: 10px;
+        padding-top: 10px;
     }
 
-    .auth-buttons button:last-child {
-        padding: 5px 10px;
-        font-size: 0.8rem;
+    .mobile-register-btn {
+        width: 100%;
+        padding: 12px 24px;
+        background: #0852B2;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-register-btn:hover {
+        background: #063d85;
+        transform: scale(1.02);
+    }
+
+    .auth-buttons .login-button {
+        padding: 10px 15px;
+        font-size: 0.9rem;
     }
 
     nav {
         width: 250px;
+    }
+
+    .hamburger.menu-open {
+        left: 200px;
+    }
+
+    nav ul {
+        padding-top: 10px;
     }
 }
