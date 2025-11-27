@@ -33,31 +33,37 @@ html {
 }
 
 .banner-content {
+  display: flex;
+  flex-direction: column;
   position: absolute;
-  top: 10%;
-  left:8%;
   text-align: center;
-  padding: 32px 24px;
-  max-width: 90%;
+  padding: 0px 24px;
+  max-width: 70%;
+  gap: 10px; /* tạo khoảng cách đẹp giữa h1 và h4 */
+  left: 15%;
+  top: 10%;
 }
 
-.banner-content h2 {
+.banner-content h1 {
   font-size: 7rem;
   font-weight: 700;
-  margin-bottom: 12px;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  letter-spacing: -4px;
   color: #0852b2;
+  margin: 0; /* loại bỏ margin mặc định */
 }
 
-.banner-content p {
+.banner-content h4 {
   font-size: 2rem;
   line-height: 1.6;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   color: white;
-  max-width: 100vh;
-  background: #f8a13f;
+  background: linear-gradient(to right, #f14f14, #f59e3b);
+  padding: 8px 50px; 
+  border-radius: 6px;
+  margin: 0; /* bỏ margin để thẳng hàng */
+  align-self: center; /* canh giữa theo flex */
 }
+
 
 .banner-content h3 {
   font-size: 2rem;
@@ -158,43 +164,61 @@ html {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .banner-container {
+    height: 60vh;
+  }
+  .banner-content {
+    padding: 0px 4px;
+    max-width: 98vw;
+    top: 10%;
+    left: 10%;
+  }
+  .banner-content h1 {
+    font-size: 5rem;
+  }
+  .banner-content h4 {
+    font-size: 1.5rem;
+    padding: 6px 30px;
+  }
   .benefit-header h2 {
-    font-size: 20px;
+    font-size: 15px;
     padding: 12px 30px;
   }
 
   .benefit-cards {
     grid-template-columns: 1fr;
+    max-width: 650px;
   }
-
-  .benefit-image {
-    height: 250px;
-  }
-
-  .roadmap-title h3 {
-    font-size: 20px;
-  }
-
-  .roadmap-title h4 {
-    font-size: 16px;
-  }
-
 }
 
 @media (max-width: 600px) {
+  .banner-container {
+    height: 50vh;
+  }
   .banner-content {
-    padding: 12px 4px;
-    max-width: 98vw;
+    padding: 0px 4px;
+    max-width: 100vw;
+    top: 10%;
+    left:3px;
   }
-  .banner-content h2 {
-    font-size: 1.2rem;
+  .banner-content h1 {
+    font-size: 3rem;
   }
-  .banner-content p {
+  .banner-content h4 {
     font-size: 1rem;
   }
-  .phone {
-    width: 70px;
+  .banner {
+    height: 60vh;
   }
+  .benefit-image{
+    height: 200px;
+  }
+}
 
+@media (max-width: 400px) {
+  .banner-content {
+     top: 10%;
+      left:0;
+  }
 }
