@@ -1,6 +1,6 @@
 .practice-page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: #fff;
   padding-top: 50px;
 }
 
@@ -328,6 +328,37 @@
 .start-btn:hover {
   background: #063d85;
   transform: scale(1.02);
+}
+
+.add-btn {
+  background: #0852B2;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(99,102,241,0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-left: 5px;
+}
+.add-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 18px rgba(99,102,241,0.45); }
+.add-btn:active { transform: translateY(0); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+
+.ghost-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
+  margin-top: 4px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.ghost-btn:hover {
+  background: #e5e7eb;
 }
 
 /* Responsive */
