@@ -15,7 +15,7 @@ const Practice = () => {
       image: "https://res.cloudinary.com/da6gk23w6/image/upload/v1732676400/1000_common_words_sample.png",
       students: "10,890 lượt học",
       topics: "20 chủ đề",
-      path: "/vocabulary/common-1000"
+      path: "/vocabulary"
     },
     {
       id: 2,
