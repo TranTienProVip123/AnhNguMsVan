@@ -5,9 +5,77 @@ import Footer from "../../components/Footer/Footer.jsx";
 import data from "./roadmapData/roadmapData.json";
 import "./RoadmapGiaoTiep.css";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const RoadmapGiaoTiep = () => {
   const [expandedPhase, setExpandedPhase] = useState(null);
   const [isImageZoomed, setIsImageZoomed] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitMessage("");
+
+    // Validate
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      setSubmitMessage("Vui lòng điền đầy đủ thông tin!");
+      setIsSubmitting(false);
+      return;
+    }
+
+    //phone validation (Vietnamese format)
+    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+    if (!phoneRegex.test(formData.phone)) {
+      setSubmitMessage("Số điện thoại không hợp lệ!");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/consultations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          setSubmitMessage(data.errors[0].message || "Gửi yêu cầu thất bại.");
+        } else {
+          setSubmitMessage(data.message || "Gửi yêu cầu thất bại.");
+        }
+        return;
+      }
+
+      setSubmitMessage("Gửi thành công! Ms Vân sẽ liên hệ bạn sớm nhất.");
+      setFormData({ name: "", phone: "" });
+      setTimeout(() => setSubmitMessage(""), 3000);
+    } catch (error) {
+      console.error("Send consultation error:", error);
+      setSubmitMessage("Có lỗi xảy ra. Vui lòng thử lại!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const getSessionNumber = (phaseId, index) => {
     const starts = [1, 11, 21, 26, 36];
@@ -181,14 +249,32 @@ const RoadmapGiaoTiep = () => {
               <div className="form-header">
                 <h3>ĐĂNG KÝ TƯ VẤN</h3>
               </div>
-              <form className="consultation-form">
+              <form className="consultation-form" onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <input type="text" name="name" placeholder="Họ và tên" required />
+                  <input type="text" name="name" placeholder="Họ và tên" value={formData.name} onChange={handleChange} disabled={isSubmitting} required />
                 </div>
                 <div className="form-group">
-                  <input type="tel" name="phone" placeholder="Số điện thoại" required />
+                  <input type="tel" name="phone" placeholder="Số điện thoại" value={formData.phone} onChange={handleChange} disabled={isSubmitting} required />
                 </div>
-                <button type="submit" className="submit-btn">Gửi</button>
+                <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <span className="loading-spinner"></span>
+                      Đang gửi...
+                    </>
+                  ) : (
+                    "GỬI YÊU CẦU TƯ VẤN"
+                  )}
+                </button>
+
+                {submitMessage && (
+                  <div
+                    className={`submit-message ${submitMessage.includes("✓") ? "success" : "error"
+                      }`}
+                  >
+                    {submitMessage}
+                  </div>
+                )}
               </form>
             </div>
           </div>
