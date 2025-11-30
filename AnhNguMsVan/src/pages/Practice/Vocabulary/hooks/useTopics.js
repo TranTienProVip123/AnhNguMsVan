@@ -177,9 +177,45 @@ export const useTopics = (token, courseId) => {
     return result;
   }, [token, fetchTopicDetail]);
 
+  // edit word
+  const updateWord = useCallback(async (topicId, wordId, wordData) => {
+    const response = await fetch(`${API_URL}/topics/${topicId}/words/${wordId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(wordData)
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      // Refresh topic detail để lấy data mới
+      await fetchTopicDetail(topicId);
+    }
+    return result;
+  }, [token, fetchTopicDetail]);
+
   useEffect(() => {
     fetchTopics();
   }, [fetchTopics]);
+
+  // Delete word from topic
+  const deleteWord = useCallback(async (topicId, wordId) => {
+    const response = await fetch(`${API_URL}/topics/${topicId}/words/${wordId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      // Refresh topic detail để lấy data mới
+      await fetchTopicDetail(topicId);
+    }
+    return result;
+  }, [token, fetchTopicDetail]);
 
   return {
     topics,
@@ -191,6 +227,8 @@ export const useTopics = (token, courseId) => {
     updateTopic,
     deleteTopic,
     addWordToTopic,
+    updateWord,
+    deleteWord,
     setSelectedTopic
   };
 };

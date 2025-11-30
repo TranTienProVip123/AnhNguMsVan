@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCloudinary } from '../../hooks/useCloudinary';
 
-const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
+const EditWordModal = ({ isOpen, word, topicId, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     english: "",
     vietnamese: "",
@@ -15,6 +15,23 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
 
   const { uploadImage, isUploading } = useCloudinary();
   const [imagePreview, setImagePreview] = useState("");
+
+  // Load word data khi mở modal
+  useEffect(() => {
+    if (word) {
+      setFormData({
+        english: word.english || "",
+        vietnamese: word.vietnamese || "",
+        definition: word.definition || "",
+        meaning: word.meaning || "",
+        example: word.example || "",
+        exampleVN: word.exampleVN || "",
+        image: word.image || "",
+        wordType: word.wordType || "noun"
+      });
+      setImagePreview(word.image || "");
+    }
+  }, [word]);
 
   const handleImageUpload = async () => {
     try {
@@ -35,77 +52,33 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
       return;
     }
 
-    if (!topic?.id) {
-      alert("Không xác định được chủ đề!");
-      return;
-    }
-
-    const result = await onSubmit(topic.id, formData);
+    const result = await onSubmit(topicId, word._id, formData);
     
     if (result.success) {
-      alert('Thêm từ vựng thành công!');
-      // Reset form
-      setFormData({
-        english: "",
-        vietnamese: "",
-        definition: "",
-        meaning: "",
-        example: "",
-        exampleVN: "",
-        image: "",
-        wordType: "noun"
-      });
-      setImagePreview("");
+      alert('Cập nhật từ vựng thành công!');
       onClose();
     } else {
       alert(result.message || 'Có lỗi xảy ra');
     }
   };
 
-  const handleClose = () => {
-    setFormData({
-      english: "",
-      vietnamese: "",
-      definition: "",
-      meaning: "",
-      example: "",
-      exampleVN: "",
-      image: "",
-      wordType: "noun"
-    });
-    setImagePreview("");
-    onClose();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="add-topic-modal-overlay" onClick={handleClose}>
+    <div className="add-topic-modal-overlay" onClick={onClose}>
       <div className="add-topic-modal add-word-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={handleClose} type="button">✕</button>
+        <button className="modal-close-btn" onClick={onClose} type="button">✕</button>
         <h2 className="modal-title">
-          <span className="modal-icon">📝</span>
-          Thêm từ vựng vào "{topic?.name}"
+          <span className="modal-icon">✏️</span>
+          Sửa từ vựng
         </h2>
         <form onSubmit={handleSubmit} className="add-topic-form">
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="wordVietnamese">Nghĩa tiếng Việt *</label>
+              <label htmlFor="editWordEnglish">Từ tiếng Anh *</label>
               <input
                 type="text"
-                id="wordVietnamese"
-                value={formData.vietnamese}
-                onChange={(e) => setFormData({ ...formData, vietnamese: e.target.value })}
-                placeholder="gia đình"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="wordEnglish">Từ tiếng Anh *</label>
-              <input
-                type="text"
-                id="wordEnglish"
+                id="editWordEnglish"
                 value={formData.english}
                 onChange={(e) => setFormData({ ...formData, english: e.target.value })}
                 placeholder="family"
@@ -113,33 +86,24 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
                 autoFocus
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="phoneticUS">Phiên âm US (IPA)</label>
-              <input
-                type="text"
-                id="phoneticUS"
-                value={formData.phoneticUS}
-                onChange={(e) => setFormData({ ...formData, phoneticUS: e.target.value })}
-                placeholder="ˈfæm.əl.i"
-              />
-            </div>
 
             <div className="form-group">
-              <label htmlFor="phoneticUK">Phiên âm UK (IPA)</label>
+              <label htmlFor="editWordVietnamese">Nghĩa tiếng Việt *</label>
               <input
                 type="text"
-                id="phoneticUK"
-                value={formData.phoneticUK}
-                onChange={(e) => setFormData({ ...formData, phoneticUK: e.target.value })}
-                placeholder="ˈfæm.ɪ.li"
+                id="editWordVietnamese"
+                value={formData.vietnamese}
+                onChange={(e) => setFormData({ ...formData, vietnamese: e.target.value })}
+                placeholder="gia đình"
+                required
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="wordType">Loại từ</label>
+            <label htmlFor="editWordType">Loại từ</label>
             <select
-              id="wordType"
+              id="editWordType"
               value={formData.wordType}
               onChange={(e) => setFormData({ ...formData, wordType: e.target.value })}
             >
@@ -152,9 +116,9 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="wordDefinition">Định nghĩa tiếng Anh</label>
+            <label htmlFor="editWordDefinition">Định nghĩa tiếng Anh</label>
             <textarea
-              id="wordDefinition"
+              id="editWordDefinition"
               value={formData.definition}
               onChange={(e) => setFormData({ ...formData, definition: e.target.value })}
               placeholder="A group of people related by blood or marriage"
@@ -163,9 +127,9 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="wordMeaning">Giải thích tiếng Việt</label>
+            <label htmlFor="editWordMeaning">Giải thích tiếng Việt</label>
             <textarea
-              id="wordMeaning"
+              id="editWordMeaning"
               value={formData.meaning}
               onChange={(e) => setFormData({ ...formData, meaning: e.target.value })}
               placeholder="Nhóm người có quan hệ huyết thống hoặc hôn nhân"
@@ -174,10 +138,10 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="wordExample">Ví dụ tiếng Anh</label>
+            <label htmlFor="editWordExample">Ví dụ tiếng Anh</label>
             <input
               type="text"
-              id="wordExample"
+              id="editWordExample"
               value={formData.example}
               onChange={(e) => setFormData({ ...formData, example: e.target.value })}
               placeholder="My family has 5 people"
@@ -185,10 +149,10 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="wordExampleVN">Ví dụ tiếng Việt</label>
+            <label htmlFor="editWordExampleVN">Ví dụ tiếng Việt</label>
             <input
               type="text"
-              id="wordExampleVN"
+              id="editWordExampleVN"
               value={formData.exampleVN}
               onChange={(e) => setFormData({ ...formData, exampleVN: e.target.value })}
               placeholder="Gia đình tôi có 5 người"
@@ -196,7 +160,7 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label>Ảnh minh họa (không bắt buộc)</label>
+            <label>Ảnh minh họa</label>
             <div className="image-upload-area">
               <div className="image-upload-label" onClick={handleImageUpload}>
                 {imagePreview ? (
@@ -212,9 +176,9 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={handleClose}>Hủy</button>
+            <button type="button" className="btn-cancel" onClick={onClose}>Hủy</button>
             <button type="submit" className="btn-submit" disabled={isUploading}>
-              {isUploading ? 'Đang xử lý...' : 'Thêm từ vựng'}
+              {isUploading ? 'Đang cập nhật...' : 'Cập nhật'}
             </button>
           </div>
         </form>
@@ -223,4 +187,4 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
   );
 };
 
-export default AddWordModal;
+export default EditWordModal;

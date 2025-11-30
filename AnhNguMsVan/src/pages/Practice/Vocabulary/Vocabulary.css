@@ -1,3 +1,7 @@
+@import './styles/modals.css';
+@import './styles/practice-panel.css';
+@import './styles/topics-panel.css';
+
 .vocabulary-page {
   min-height: 100vh;
   background: #f5f7fa;
