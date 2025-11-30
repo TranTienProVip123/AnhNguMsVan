@@ -43,15 +43,6 @@ export const useWordNavigation = (selectedTopic, currentTopicIndex, topics) => {
     }
   }, [selectedTopic, currentWordIndex]);
 
-  // const handleCheckAnswer = useCallback(() => {
-  //   if (!selectedTopic?.words?.[currentWordIndex]) return;
-    
-  //   const currentWord = selectedTopic.words[currentWordIndex];
-  //   const isAnswerCorrect = userAnswer.trim().toLowerCase() === currentWord.vietnamese.toLowerCase();
-    
-  //   setIsCorrect(isAnswerCorrect);
-  //   setShowAnswer(true);
-  // }, [selectedTopic, currentWordIndex, userAnswer]);
 
   const handleDontKnow = useCallback(() => {
     setShowAnswer(true);

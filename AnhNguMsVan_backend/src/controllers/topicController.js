@@ -62,25 +62,52 @@ export const addWordController = async (req, res, next) => {
 };
 
 export const updateWordController = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, message: 'Dữ liệu không hợp lệ', errors: errors.array() });
-  }
   try {
-    const { id, index } = req.params;
-    const result = await updateWordInTopic(id, Number(index), req.body);
-    if (result.reason === 'NOT_FOUND') return res.status(404).json({ success: false, message: 'Không tìm thấy chủ đề' });
-    if (result.reason === 'WORD_NOT_FOUND') return res.status(404).json({ success: false, message: 'Không tìm thấy từ vựng' });
-    return res.json({ success: true, message: 'Cập nhật từ vựng thành công', data: result.topic });
-  } catch (err) { next(err); }
+    const { topicId, wordId } = req.params;
+    const result = await updateWordInTopic(topicId, wordId, req.body);
+
+    if (result.reason === 'NOT_FOUND_TOPIC') {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy chủ đề' });
+    }
+
+    if (result.reason === 'NOT_FOUND_WORD') {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy từ vựng' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Cập nhật từ vựng thành công',
+      data: result.word
+    });
+
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const deleteWordController = async (req, res, next) => {
   try {
-    const { id, index } = req.params;
-    const result = await deleteWordInTopic(id, Number(index));
-    if (result.reason === 'NOT_FOUND') return res.status(404).json({ success: false, message: 'Không tìm thấy chủ đề' });
-    if (result.reason === 'WORD_NOT_FOUND') return res.status(404).json({ success: false, message: 'Không tìm thấy từ vựng' });
-    return res.json({ success: true, message: 'Xóa từ vựng thành công', data: result.topic });
-  } catch (err) { next(err); }
+    const { topicId, wordId } = req.params;
+    const result = await deleteWordInTopic(topicId, wordId);
+
+    if (result.reason === 'NOT_FOUND_TOPIC') {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy chủ đề' });
+    }
+
+    if (result.reason === 'NOT_FOUND_WORD') {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy từ vựng' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Xóa từ vựng thành công',
+      data: {
+        deletedWord: result.deletedWord,
+        remainingWords: result.remaining
+      }
+    });
+
+  } catch (err) {
+    next(err);
+  }
 };

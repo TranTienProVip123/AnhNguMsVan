@@ -80,11 +80,13 @@ export const softDeleteTopic = async (id) => {
   return {};
 };
 
+// thêm từ vào topic
 export const addWordToTopic = async (topicId, payload) => {
   const topic = await Topic.findById(topicId);
   if (!topic) return { reason: 'NOT_FOUND' };
 
   topic.words.push({
+    id: payload._id,
     english: payload.english,
     vietnamese: payload.vietnamese,
     definition: payload.definition,
@@ -98,30 +100,57 @@ export const addWordToTopic = async (topicId, payload) => {
   return { topic };
 };
 
-export const updateWordInTopic = async (topicId, index, payload) => {
+// cập nhật từ trong topic
+// Update a word inside topic
+export const updateWordInTopic = async (topicId, wordId, payload) => {
   const topic = await Topic.findById(topicId);
-  if (!topic) return { reason: 'NOT_FOUND' };
-  if (index < 0 || index >= topic.words.length) return { reason: 'WORD_NOT_FOUND' };
+  if (!topic) return { reason: 'NOT_FOUND_TOPIC' };
 
-  const w = topic.words[index];
-  if (payload.english) w.english = payload.english;
-  if (payload.vietnamese) w.vietnamese = payload.vietnamese;
-  if (payload.definition !== undefined) w.definition = payload.definition;
-  if (payload.meaning !== undefined) w.meaning = payload.meaning;
-  if (payload.example !== undefined) w.example = payload.example;
-  if (payload.exampleVN !== undefined) w.exampleVN = payload.exampleVN;
-  if (payload.image !== undefined) w.image = payload.image;
-  if (payload.wordType) w.wordType = payload.wordType;
+  const wordIndex = topic.words.findIndex(
+    w => w._id && w._id.toString() === wordId
+  );
+
+  if (wordIndex === -1) {
+    return { reason: 'NOT_FOUND_WORD' };
+  }
+
+  const existingWord = topic.words[wordIndex];
+
+  // Update fields (giữ nguyên _id)
+  topic.words[wordIndex] = {
+    ...existingWord,
+    english: payload.english ?? existingWord.english,
+    vietnamese: payload.vietnamese ?? existingWord.vietnamese,
+    definition: payload.definition ?? existingWord.definition,
+    meaning: payload.meaning ?? existingWord.meaning,
+    example: payload.example ?? existingWord.example,
+    exampleVN: payload.exampleVN ?? existingWord.exampleVN,
+    image: payload.image ?? existingWord.image,
+    wordType: payload.wordType ?? existingWord.wordType
+  };
 
   await topic.save();
-  return { topic };
+  return { word: topic.words[wordIndex] };
 };
 
-export const deleteWordInTopic = async (topicId, index) => {
-  const topic = await Topic.findByIdAndDelete(topicId);
-  if (!topic) return { reason: 'NOT_FOUND' };
-  if (index < 0 || index >= topic.words.length) return { reason: 'WORD_NOT_FOUND' };
+// xóa từ khỏi topic
+// Delete a word inside topic
+export const deleteWordInTopic = async (topicId, wordId) => {
+  const topic = await Topic.findById(topicId);
+  if (!topic) return { reason: 'NOT_FOUND_TOPIC' };
 
-  topic.words.splice(index, 1);
-  return { topic };
+  const wordIndex = topic.words.findIndex(
+    w => w._id && w._id.toString() === wordId
+  );
+
+  if (wordIndex === -1) {
+    return { reason: 'NOT_FOUND_WORD' };
+  }
+
+  const deletedWord = topic.words[wordIndex];
+
+  topic.words.splice(wordIndex, 1);
+  await topic.save();
+
+  return { deletedWord, remaining: topic.words.length };
 };
