@@ -51,7 +51,7 @@ const Practice = () => {
     handleCloseForm();
   };
 
-  const handleCourseClick = (id) => navigate(`/courses/${id}`);
+  const handleCourseClick = (id) => navigate(`/vocabulary?courseId=${id}`);
   const toggleModal = () => setIsModalOpen((v) => !v);
   const openCreateForm = () => {
     setFormMode("create");

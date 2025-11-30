@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, lazy, Suspense } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import Header from "../../../components/Header/Header.jsx";
 import TopicList from "./components/TopicList.jsx";
@@ -16,6 +17,9 @@ const AddWordModal = lazy(() => import('./components/modals/AddWordModal.jsx'));
 
 const Vocabulary = () => {
   const { user, token } = useAuth();
+  const location = useLocation();
+  const courseIdFromQuery = new URLSearchParams(location.search).get("courseId");
+  const courseId = courseIdFromQuery || location.state?.courseId;
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [openMenuId, setOpenMenuId] = useState(null);
   
@@ -39,7 +43,7 @@ const Vocabulary = () => {
     updateTopic,
     deleteTopic,
     addWordToTopic
-  } = useTopics(token);
+  } = useTopics(token, courseId);
 
   const {
     currentWordIndex,
@@ -158,10 +162,24 @@ const Vocabulary = () => {
   // No topics
   if (!topics.length) {
     return (
-      <NoTopicsState 
-        isAdmin={isAdmin}
-        onAddTopicClick={() => setIsAddTopicModalOpen(true)}
-      />
+      <>
+        <Header />
+        <div className="vocabulary-page">
+          <NoTopicsState 
+            isAdmin={isAdmin}
+            onAddTopicClick={() => setIsAddTopicModalOpen(true)}
+          />
+        </div>
+        <Suspense fallback={null}>
+          {isAddTopicModalOpen && (
+            <AddTopicModal
+              isOpen={isAddTopicModalOpen}
+              onClose={() => setIsAddTopicModalOpen(false)}
+              onSubmit={addTopic}
+            />
+          )}
+        </Suspense>
+      </>
     );
   }
 
@@ -204,7 +222,7 @@ const Vocabulary = () => {
               setUserAnswer={setUserAnswer}
               showAnswer={showAnswer}
               isCorrect={isCorrect}
-              correctAnswer={currentWord.vietnamese}
+              correctAnswer={currentWord}
               onCheckAnswer={handleCheckAnswer}
               onDontKnow={handleDontKnow}
               onNext={handleNext}
