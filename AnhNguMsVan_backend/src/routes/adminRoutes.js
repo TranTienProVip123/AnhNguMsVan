@@ -3,11 +3,11 @@ import { authMiddleware, authorize } from '../middleware/authMiddleware.js';
 import { getUsers, updateUser, deleteUser } from '../controllers/userAdminController.js';
 import { getConsultations, updateStatus, deleteConsultation } from '../controllers/consultationController.js';
 import { createCourseController, updateCourseController, deleteCourseController } from '../controllers/courseController.js';
-import { createTopicController, updateTopicController, deleteTopicController } from '../controllers/topicController.js';
+import { createTopicController, updateTopicController, deleteTopicController, addWordController, updateWordController, deleteWordController } from '../controllers/topicController.js';
 import { updateUserValidator, deleteUserValidator } from '../validations/adminValidation.js';
 import { updateStatusValidator, deleteConsultationValidator } from '../validations/consultationValidation.js';
 import { createCourseValidator, updateCourseValidator, deleteCourseValidator } from '../validations/courseValidation.js';
-import { createTopicValidator, updateTopicValidator, deleteTopicValidator } from '../validations/topicValidation.js';
+import { createTopicValidator, updateTopicValidator, deleteTopicValidator, addWordValidator, updateWordValidator, deleteWordValidator } from '../validations/topicValidation.js';
 
 const router = Router();
 
@@ -32,5 +32,12 @@ router.delete('/courses/:id', deleteCourseValidator, deleteCourseController);
 router.post('/topics', createTopicValidator, createTopicController);
 router.put('/topics/:id', updateTopicValidator, updateTopicController);
 router.delete('/topics/:id', deleteTopicValidator, deleteTopicController);
+
+// add word in topic
+router.post('/topics/:id/words', addWordValidator, addWordController);
+router.put('/topics/:topicId/words/:wordId', updateWordValidator, updateWordController);
+router.delete('/topics/:topicId/words/:wordId', deleteWordValidator, deleteWordController);
+
+
 
 export default router;

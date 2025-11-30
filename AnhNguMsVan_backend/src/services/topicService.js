@@ -72,9 +72,56 @@ export const updateTopic = async (id, payload) => {
 };
 
 export const softDeleteTopic = async (id) => {
-  const topic = await Topic.findById(id);
+  const topic = await Topic.findByIdAndDelete(id);
   if (!topic) return { reason: 'NOT_FOUND' };
-  topic.isActive = false;
+  // topic.isActive = false;
+
   await topic.save();
   return {};
+};
+
+export const addWordToTopic = async (topicId, payload) => {
+  const topic = await Topic.findById(topicId);
+  if (!topic) return { reason: 'NOT_FOUND' };
+
+  topic.words.push({
+    english: payload.english,
+    vietnamese: payload.vietnamese,
+    definition: payload.definition,
+    meaning: payload.meaning,
+    example: payload.example,
+    exampleVN: payload.exampleVN,
+    image: payload.image,
+    wordType: payload.wordType || 'noun'
+  });
+  await topic.save();
+  return { topic };
+};
+
+export const updateWordInTopic = async (topicId, index, payload) => {
+  const topic = await Topic.findById(topicId);
+  if (!topic) return { reason: 'NOT_FOUND' };
+  if (index < 0 || index >= topic.words.length) return { reason: 'WORD_NOT_FOUND' };
+
+  const w = topic.words[index];
+  if (payload.english) w.english = payload.english;
+  if (payload.vietnamese) w.vietnamese = payload.vietnamese;
+  if (payload.definition !== undefined) w.definition = payload.definition;
+  if (payload.meaning !== undefined) w.meaning = payload.meaning;
+  if (payload.example !== undefined) w.example = payload.example;
+  if (payload.exampleVN !== undefined) w.exampleVN = payload.exampleVN;
+  if (payload.image !== undefined) w.image = payload.image;
+  if (payload.wordType) w.wordType = payload.wordType;
+
+  await topic.save();
+  return { topic };
+};
+
+export const deleteWordInTopic = async (topicId, index) => {
+  const topic = await Topic.findByIdAndDelete(topicId);
+  if (!topic) return { reason: 'NOT_FOUND' };
+  if (index < 0 || index >= topic.words.length) return { reason: 'WORD_NOT_FOUND' };
+
+  topic.words.splice(index, 1);
+  return { topic };
 };

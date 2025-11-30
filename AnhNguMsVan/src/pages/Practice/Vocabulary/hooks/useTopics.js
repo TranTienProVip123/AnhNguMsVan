@@ -158,7 +158,7 @@ export const useTopics = (token, courseId) => {
 
   // Add word to topic
   const addWordToTopic = useCallback(async (topicId, wordData) => {
-    const response = await fetch(`${TOPICS_API}/${topicId}/words`, {
+    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -177,9 +177,13 @@ export const useTopics = (token, courseId) => {
     return result;
   }, [token, fetchTopicDetail]);
 
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
+
   // edit word
   const updateWord = useCallback(async (topicId, wordId, wordData) => {
-    const response = await fetch(`${API_URL}/topics/${topicId}/words/${wordId}`, {
+    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words/${wordId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -202,7 +206,7 @@ export const useTopics = (token, courseId) => {
 
   // Delete word from topic
   const deleteWord = useCallback(async (topicId, wordId) => {
-    const response = await fetch(`${API_URL}/topics/${topicId}/words/${wordId}`, {
+    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words/${wordId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`

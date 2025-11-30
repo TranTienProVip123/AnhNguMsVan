@@ -14,16 +14,10 @@ import { useWordNavigation } from "./hooks/useWordNavigation.js";
 import "./Vocabulary.css";
 
 // Lazy load modals - chỉ load khi cần
-const AddTopicModal = lazy(() =>
-  import("./components/modals/AddTopicModal.jsx")
-);
-const EditTopicModal = lazy(() =>
-  import("./components/modals/EditTopicModal.jsx")
-);
+const AddTopicModal = lazy(() => import("./components/modals/AddTopicModal.jsx"));
+const EditTopicModal = lazy(() => import("./components/modals/EditTopicModal.jsx"));
 const AddWordModal = lazy(() => import("./components/modals/AddWordModal.jsx"));
-const EditWordModal = lazy(() =>
-  import("./components/modals/EditWordModal.jsx")
-); // ← Thêm dòng này
+const EditWordModal = lazy(() => import("./components/modals/EditWordModal.jsx"));
 
 const Vocabulary = () => {
   const { user, token } = useAuth();
