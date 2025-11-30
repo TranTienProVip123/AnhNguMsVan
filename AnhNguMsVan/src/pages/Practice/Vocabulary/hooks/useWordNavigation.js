@@ -7,6 +7,31 @@ export const useWordNavigation = (selectedTopic, currentTopicIndex, topics) => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null);
 
+  const handleCheckAnswer = useCallback(() => {
+    if (!selectedTopic?.words?.[currentWordIndex]) {
+      console.error('No word found');
+      return;
+    }
+
+    const currentWord = selectedTopic.words[currentWordIndex];
+    const correctAnswer = currentWord.english;
+    
+    // Normalize và so sánh (case-insensitive, trim spaces)
+    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+    const normalizedCorrectAnswer = correctAnswer.trim().toLowerCase();
+    
+    console.log('Checking answer:', {
+      userInput: normalizedUserAnswer,
+      correctAnswer: normalizedCorrectAnswer,
+      isMatch: normalizedUserAnswer === normalizedCorrectAnswer
+    });
+
+    const answerIsCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+    
+    setIsCorrect(answerIsCorrect);
+    setShowAnswer(true);
+  }, [selectedTopic, currentWordIndex, userAnswer]);
+
   // Prefetch ảnh khi topic hoặc word thay đổi
   useEffect(() => {
     if (selectedTopic?.words) {
@@ -18,15 +43,15 @@ export const useWordNavigation = (selectedTopic, currentTopicIndex, topics) => {
     }
   }, [selectedTopic, currentWordIndex]);
 
-  const handleCheckAnswer = useCallback(() => {
-    if (!selectedTopic?.words?.[currentWordIndex]) return;
+  // const handleCheckAnswer = useCallback(() => {
+  //   if (!selectedTopic?.words?.[currentWordIndex]) return;
     
-    const currentWord = selectedTopic.words[currentWordIndex];
-    const isAnswerCorrect = userAnswer.trim().toLowerCase() === currentWord.vietnamese.toLowerCase();
+  //   const currentWord = selectedTopic.words[currentWordIndex];
+  //   const isAnswerCorrect = userAnswer.trim().toLowerCase() === currentWord.vietnamese.toLowerCase();
     
-    setIsCorrect(isAnswerCorrect);
-    setShowAnswer(true);
-  }, [selectedTopic, currentWordIndex, userAnswer]);
+  //   setIsCorrect(isAnswerCorrect);
+  //   setShowAnswer(true);
+  // }, [selectedTopic, currentWordIndex, userAnswer]);
 
   const handleDontKnow = useCallback(() => {
     setShowAnswer(true);
