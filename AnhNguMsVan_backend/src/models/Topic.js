@@ -49,6 +49,10 @@ const topicSchema = new mongoose.Schema({
     type: [wordSchema], // Sử dụng wordSchema
     default: []
   },
+  totalWords: {
+    type: Number,
+    default: 0
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -59,11 +63,6 @@ const topicSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
-});
-
-// Virtual field: totalWords - Với safe check
-topicSchema.virtual('totalWords').get(function() {
-  return this.words ? this.words.length : 0; // ← Thêm check
 });
 
 // Virtual field: progress - Với safe check

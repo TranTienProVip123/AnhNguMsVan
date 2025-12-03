@@ -1,0 +1,85 @@
+.verify-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7faff 0%, #ffffff 40%);
+  padding: 120px 16px 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.verify-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #e5eaf4;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(8, 82, 178, 0.08);
+}
+
+.verify-card h1 {
+  margin: 0;
+  color: #0b2c52;
+}
+
+.verify-card p {
+  margin: 6px 0 14px;
+  color: #4b5563;
+}
+
+.verify-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verify-form label {
+  font-weight: 600;
+  color: #0b2c52;
+}
+
+.verify-form input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d9e5ff;
+  background: #f8fbff;
+}
+
+.verify-form button {
+  margin-top: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #0852b2;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.verify-form button:hover:not(:disabled) {
+  box-shadow: 0 10px 20px rgba(8, 82, 178, 0.25);
+  transform: translateY(-1px);
+}
+
+.verify-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghost-btn {
+  background: #eef4ff;
+  color: #0b58c1;
+  border: 1px solid #d9e5ff !important;
+}
+
+.verify-success {
+  color: #0a7a3b;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.verify-error {
+  color: #c53030;
+  font-weight: 600;
+  margin-top: 10px;
+}

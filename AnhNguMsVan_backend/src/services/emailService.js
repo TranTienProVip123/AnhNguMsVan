@@ -3,26 +3,24 @@ import { config } from '../config/config.js';
 
 sgMail.setApiKey(config.sendgridApiKey);
 
-export const sendVerificationEmail = async ({ to, token }) => {
-  const verifyUrl = `${config.clientUrl}/verify-email?token=${token}`;
+export const sendVerificationEmail = async ({ to, code }) => {
   const msg = {
     to,
     from: config.mailFrom,
-    subject: 'Xác thực email tài khoản',
-    text: `Nhấn vào link sau để xác thực: ${verifyUrl}`,
-    html: `<p>Nhấn vào link sau để xác thực:</p><a href="${verifyUrl}">${verifyUrl}</a>`
+    subject: 'Mã xác thực email',
+    text: `Mã xác thực của bạn: ${code}. Hiệu lực 15 phút.`,
+    html: `<p>Mã xác thực của bạn:</p><h2>${code}</h2><p>Hiệu lực 15 phút.</p>`
   };
   await sgMail.send(msg);
 };
 
 export const sendResetPasswordEmail = async ({ to, token }) => {
-  const resetUrl = `${config.clientUrl}/reset-password/${token}`;
   const msg = {
     to,
     from: config.mailFrom,
-    subject: 'Đặt lại mật khẩu',
-    text: `Nhấn vào link sau để đặt lại mật khẩu: ${resetUrl}`,
-    html: `<p>Nhấn vào link sau để đặt lại mật khẩu:</p><a href="${resetUrl}">${resetUrl}</a>`
+    subject: 'Mã đặt lại mật khẩu',
+    text: `Mã đặt lại mật khẩu của bạn là: ${token}. Mã có hiệu lực 15 phút.`,
+    html: `<p>Mã đặt lại mật khẩu của bạn:</p><h2>${token}</h2><p>Mã có hiệu lực 15 phút.</p>`
   };
   await sgMail.send(msg);
 };

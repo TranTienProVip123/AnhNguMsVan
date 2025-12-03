@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import ProtectedRoute from './routes/ProtectedRoute.jsx';
+import ProtectedRoute from './routes/ProtectedRoute.jsx';
 import Home from './pages/Home/Home.jsx';
 import Practice from './pages/Practice/Practice.jsx';
 import Vocabulary from "./pages/Practice/Vocabulary/Vocabulary";
@@ -9,6 +9,8 @@ import RoadmapGiaoTiep from "./pages/Course/RoadmapGiaoTiep";
 import AdminDashboard from './components/admin/layout/AdminDashboard.jsx';
 import UserList from './components/admin/pages/UserList.jsx';
 import ConsultationList from './components/admin/pages/ConsultationList.jsx';
+import Profile from './pages/Profile/Profile.jsx';
+import VerifyEmail from './pages/VerifyEmail/VerifyEmail.jsx';
 
 const App = () => {
     return (
@@ -20,6 +22,8 @@ const App = () => {
                 <Route path="/vocabulary" element={<Vocabulary />} />
                 {/* <Route path="/listening" element={<Listening />} /> */}
                 <Route path="/roadmap/giao-tiep" element={<RoadmapGiaoTiep />} />
+                <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
 
                 <Route path="/admin" element={<AdminDashboard />}>
                     <Route path="users" element={<UserList />} />

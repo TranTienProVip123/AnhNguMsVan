@@ -4,18 +4,22 @@ export const listTopics = async ({ category }) => {
   const filter = { isActive: true };
   if (category) filter.category = category;
   const topics = await Topic.find(filter)
-    .select('-words')
-    .sort({ createdAt: -1 });
-  return topics.map(t => ({
-    id: t._id,
-    name: t.name,
-    image: t.image,
-    description: t.description,
-    category: t.category,
-    totalWords: t.totalWords,
-    progress: 0,
-    learnedWords: 0
-  }));
+    .select('name image description category totalWords')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return topics.map(t => {
+    return {
+      id: t._id,
+      name: t.name,
+      image: t.image,
+      description: t.description,
+      category: t.category,
+      totalWords: typeof t.totalWords === 'number' ? t.totalWords : 0,
+      progress: t.progress || 0,
+      learnedWords: t.learnedWords || 0
+    };
+  });
 };
 
 export const getTopicDetail = async (id) => {
@@ -30,8 +34,8 @@ export const getTopicDetail = async (id) => {
       category: topic.category,
       totalWords: topic.totalWords,
       words: topic.words,
-      progress: 0,
-      learnedWords: 0
+      progress: topic.progress || 0,
+      learnedWords: topic.learnedWords || 0
     }
   };
 };
@@ -43,7 +47,8 @@ export const createTopic = async (payload) => {
     image: payload.image,
     description: payload.description,
     category: payload.category || 'vocabulary',
-    words: []
+    words: [],
+    totalWords: 0
   });
   return {
     topic: {
@@ -53,8 +58,8 @@ export const createTopic = async (payload) => {
       description: topic.description,
       category: topic.category,
       totalWords: topic.totalWords,
-      progress: 0,
-      learnedWords: 0
+      progress: topic.progress || 0,
+      learnedWords: topic.learnedWords || 0
     }
   };
 };
@@ -96,6 +101,7 @@ export const addWordToTopic = async (topicId, payload) => {
     image: payload.image,
     wordType: payload.wordType || 'noun'
   });
+  topic.totalWords = topic.words.length;
   await topic.save();
   return { topic };
 };
@@ -150,6 +156,7 @@ export const deleteWordInTopic = async (topicId, wordId) => {
   const deletedWord = topic.words[wordIndex];
 
   topic.words.splice(wordIndex, 1);
+  topic.totalWords = topic.words.length;
   await topic.save();
 
   return { deletedWord, remaining: topic.words.length };

@@ -9,5 +9,6 @@ export const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "1h",
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
   sendgridApiKey: process.env.SENDGRID_API_KEY,
-  mailFrom: process.env.MAIL_FROM || 'huytruongdinh61@gmail.com'
+  mailFrom: process.env.MAIL_FROM || 'huytruongdinh61@gmail.com',
+  googleClientId: process.env.GOOGLE_CLIENT_ID
 };

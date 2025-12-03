@@ -22,9 +22,9 @@ const TopicItem = memo(({
       <div className="topic-info">
         <h4 className="topic-title">{topic.name}</h4>
         <div className="topic-stats">
-          <span className="topic-words">{topic.learnedWords}/{topic.totalWords} từ</span>
+          <span className="topic-words">{topic.learnedWords ?? 0}/{topic.totalWords ?? 0} từ</span>
           <div className="topic-stats-right">
-            <span className="topic-progress">{topic.progress}%</span>
+            <span className="topic-progress">{topic.progress ?? 0}%</span>
             {isAdmin && (
               <div className="topic-menu-container">
                 <button 
@@ -47,7 +47,7 @@ const TopicItem = memo(({
                       className="delete-btn"
                       type="button"
                     >
-                      🗑️ Xóa chủ đề
+                      🗑 Xóa chủ đề
                     </button>
                   </div>
                 )}

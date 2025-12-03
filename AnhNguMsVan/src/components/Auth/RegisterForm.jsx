@@ -10,11 +10,7 @@ const RegisterForm = ({
   <form onSubmit={onSubmit}>
     <h1>Tạo tài khoản</h1>
 
-    <div className="social-icons">
-      <a href="#" className="icon" onClick={(e) => e.preventDefault()}>
-        G
-      </a>
-    </div>
+    <div id="googleBtnRegister" className="social-icons" />
 
     <span>hoặc dùng email của bạn để đăng ký</span>
     {error && <p className="error-text">{error}</p>}

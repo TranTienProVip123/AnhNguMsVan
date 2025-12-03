@@ -1,11 +1,23 @@
 import { validationResult } from "express-validator";
-import { registerUser, loginUser, fetchMe, forgotPass, changePassword, verifyEmailService } from "../services/authService.js"; 
+import {
+  registerUser,
+  loginUser,
+  fetchMe,
+  forgotPass,
+  changePassword,
+  verifyEmailService,
+  loginWithGoogle,
+  resendVerifyCode
+} from "../services/authService.js";
 
 const buildUserPayload = (user) => ({
   id: user._id,
   email: user.email,
+  avatar: user.avatar,
   name: user.name,
   role: user.role,
+  authProvider: user.authProvider,
+  passwordChangedAt: user.passwordChangedAt
 });
 
 export const register = async (req, res, next) => {
@@ -44,19 +56,31 @@ export const register = async (req, res, next) => {
 };
 
 export const verifyEmail = async (req, res, next) => {
-  const { token } = req.query;
+  const { email, code } = req.body;
+  if (!email || !code) return res.status(400).json({ success: false, message: "Thiếu email hoặc mã" });
   try {
-    const result = await verifyEmailService({ token });
+    const result = await verifyEmailService({ email: email.toLowerCase().trim(), code });
     if (result.reason === 'INVALID_OR_EXPIRED_TOKEN') {
-      return res.status(400).json({
-        success: false,
-        message: 'Liên kết xác thực không hợp lệ hoặc đã hết hạn.'
-      });
+      return res.status(400).json({ success: false, message: 'Mã không hợp lệ hoặc đã hết hạn.' });
     }
-    return res.status(200).json({
-      success: true,
-      message: 'Xác thực email thành công. Bạn có thể đăng nhập ngay bây giờ.'
-    });
+    return res.status(200).json({ success: true, message: 'Xác thực email thành công.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resendVerifyEmail = async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ success: false, message: "Thiếu email" });
+  try {
+    const result = await resendVerifyCode({ email });
+    if (result.reason === "USER_NOT_FOUND") {
+      return res.status(404).json({ success: false, message: "Email không tồn tại." });
+    }
+    if (result.reason === "ALREADY_VERIFIED") {
+      return res.status(400).json({ success: false, message: "Email đã được xác thực." });
+    }
+    return res.status(200).json({ success: true, message: "Đã gửi lại mã xác thực." });
   } catch (err) {
     next(err);
   }
@@ -76,10 +100,8 @@ export const login = async (req, res, next) => {
   email = typeof email === "string" ? email.toLowerCase().trim() : "";
 
   try {
-    // Gọi service xử lý logic
     const result = await loginUser({ email, password });
 
-    // Sai email
     if (result.reason === "USER_NOT_FOUND") {
       return res.status(401).json({
         success: false,
@@ -90,11 +112,10 @@ export const login = async (req, res, next) => {
     if (result.reason === 'EMAIL_NOT_VERIFIED') {
       return res.status(403).json({
         success: false,
-        message: 'Tài khoản chưa được xác thực email. Vui lòng kiểm tra email để xác thực.'
+        message: 'Tài khoản chưa xác thực email. Vui lòng kiểm tra email để xác thực.'
       });
     }
 
-    // Sai mật khẩu
     if (result.reason === "INVALID_PASSWORD") {
       return res.status(401).json({
         success: false,
@@ -102,7 +123,6 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Đăng nhập thành công – lấy user, token từ service
     const { user, token } = result;
 
     return res.status(200).json({
@@ -147,15 +167,13 @@ export const forgotPassword = async (req, res, next) => {
     if (result.reason === "EMAIL_NOT_VERIFIED") {
       return res.status(400).json({
         success: false,
-        message: "Tài khoản chưa được xác thực email, không thể đặt lại mật khẩu.",
+        message: "Tài khoản chưa xác thực email, không thể đặt lại mật khẩu.",
       });
     }
 
-    const { } = result;
-
     return res.status(200).json({
       success: true,
-      message: "Nếu email tồn tại trong hệ thống, một liên kết đặt lại mật khẩu đã được gửi.",
+      message: "Nếu email tồn tại trong hệ thống, mã đặt lại mật khẩu đã được gửi.",
     });
   } catch (err) {
     next(err);
@@ -163,15 +181,22 @@ export const forgotPassword = async (req, res, next) => {
 };
 
 export const resetPassword = async (req, res, next) => {
-  const { token, newPassword } = req.body;
+  const { code, newPassword } = req.body;
 
   try {
-    const result = await changePassword({ token, newPassword });
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu mã xác nhận.",
+      });
+    }
+
+    const result = await changePassword({ code, newPassword });
 
     if (result.reason === "INVALID_OR_EXPIRED_TOKEN") {
       return res.status(400).json({
         success: false,
-        message: "Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.",
+        message: "Mã không hợp lệ hoặc đã hết hạn.",
       });
     }
 
@@ -182,11 +207,32 @@ export const resetPassword = async (req, res, next) => {
       });
     }
 
-    const { } = result;
-
     return res.status(200).json({
       success: true,
-      message: "Đặt lai mật khẩu thành công, vui lòng đăng nhập lại.",
+      message: "Đặt lại mật khẩu thành công, vui lòng đăng nhập lại.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ success: false, message: 'Thiếu idToken' });
+    }
+
+    const result = await loginWithGoogle({ idToken });
+    if (result.reason === 'INVALID_GOOGLE_TOKEN') {
+      return res.status(401).json({ success: false, message: 'Token Google không hợp lệ' });
+    }
+
+    const { user, token } = result;
+    return res.status(200).json({
+      success: true,
+      message: 'Đăng nhập Google thành công',
+      data: { user: { id: user._id, email: user.email, name: user.name, role: user.role, avatar: user.avatar, authProvider: user.authProvider }, token }
     });
   } catch (err) {
     next(err);

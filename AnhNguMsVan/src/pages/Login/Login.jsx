@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation, replace } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import LoginForm from '../../components/Auth/LoginForm';
 import RegisterForm from '../../components/Auth/RegisterForm';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/Header/Header';
 import './Login.css';
+import ResetPasswordModal from '../../components/Auth/ResetPasswordModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ email: '', name: '', password: '', confirmPassword: '' });
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [showReset, setShowReset] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,10 +27,50 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const googleCallback = async (resp) => {
+    try {
+      setLoginError('');
+      setLoginLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: resp.credential })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return setLoginError(data.message || 'Đăng nhập Google thất bại');
+      }
+
+      login(data);
+      const redirectPath = data?.data?.user?.role === 'admin'
+        ? '/admin'
+        : (location.state?.from || "/");
+      navigate(redirectPath, { replace: true });
+    } catch (err) {
+      setLoginError('Không thể kết nối máy chủ (Google)');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!window.google || !GOOGLE_CLIENT_ID) return;
+    window.google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: googleCallback });
+    const loginEl = document.getElementById('googleBtnLogin');
+    const regEl = document.getElementById('googleBtnRegister');
+    if (loginEl && !loginEl.hasChildNodes()) {
+      window.google.accounts.id.renderButton(loginEl, { theme: 'outline', size: 'large' });
+    }
+    if (regEl && !regEl.hasChildNodes()) {
+      window.google.accounts.id.renderButton(regEl, { theme: 'outline', size: 'large' });
+    }
+  }, []);
+
   useEffect(() => {
     if (!globalMsg) return;
     clearTimeout(globalMsgTimer.current);
-    globalMsgTimer.current = setTimeout(() => setGlobalMsg(''), 4000); //sau 4s hide msg
+    globalMsgTimer.current = setTimeout(() => setGlobalMsg(''), 4000);
     return () => clearTimeout(globalMsgTimer.current);
   }, [globalMsg]);
 
@@ -59,7 +102,6 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    //validate trước khi gửi request
     if (!form.email || !form.name || !form.password || !form.confirmPassword) {
       return setError('Vui lòng điền đầy đủ thông tin.');
     }
@@ -69,7 +111,7 @@ const Login = () => {
     }
 
     if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/[0-9]/.test(form.password)) {
-      return setError('Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số.');
+      return setError('Mật khẩu cần có 1 chữ hoa, 1 chữ thường và 1 số.');
     }
 
     if (form.password !== form.confirmPassword) {
@@ -93,9 +135,10 @@ const Login = () => {
         return setError(data.message || data.errors?.[0]?.msg || 'Đăng ký thất bại');
       }
 
-      setGlobalMsg('Đăng ký thành công, vui lòng đăng nhập.');
-      setForm({ email: '', name: '', password: '', confirmPassword: '' });
+      setGlobalMsg('Đăng ký thành công. Vui lòng kiểm tra email để nhập mã xác thực.');
+      navigate('/verify-email', { state: { email: form.email } });
       setIsRegister(false);
+      setForm({ email: '', name: '', password: '', confirmPassword: '' });
     } catch (err) {
       setError('Không thể kết nối máy chủ');
     } finally {
@@ -123,17 +166,16 @@ const Login = () => {
         return setLoginError(data.message || data.errors?.[0]?.msg || 'Đăng nhập thất bại');
       }
 
-      login(data); //cap nhat context va localStorage
+      login(data);
 
-      if (data?.data?.user?.role  === 'admin') {
+      if (data?.data?.user?.role === 'admin') {
         navigate('/admin', { replace: true });
       } else {
         const redirectPath = location.state?.from || "/";
         navigate(redirectPath, { replace: true });
       }
-      
-      setLoginForm({ email: '', password: '' });
 
+      setLoginForm({ email: '', password: '' });
     } catch (err) {
       setLoginError('Không thể kết nối máy chủ');
     } finally {
@@ -163,6 +205,7 @@ const Login = () => {
             isLoading={loginLoading}
             onChange={handleLoginChange}
             onSubmit={handleLogin}
+            onForgotPassword={() => setShowReset(true)}
           />
         </div>
 
@@ -186,6 +229,13 @@ const Login = () => {
           </div>
         </div>
       </div>
+      {showReset && (
+        <ResetPasswordModal
+          email={loginForm.email}
+          apiBaseUrl={API_BASE_URL}
+          onClose={() => setShowReset(false)}
+        />
+      )}
     </div>
   );
 };
