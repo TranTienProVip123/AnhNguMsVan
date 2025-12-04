@@ -65,13 +65,6 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Virtual field: progress - Với safe check
-topicSchema.virtual('progress').get(function() {
-  const total = this.totalWords || 0;
-  const learned = this.learnedWords || 0;
-  return total > 0 ? Math.round((learned / total) * 100) : 0;
-});
-
 // Đảm bảo virtuals được included khi convert to JSON
 topicSchema.set('toJSON', { 
   virtuals: true,

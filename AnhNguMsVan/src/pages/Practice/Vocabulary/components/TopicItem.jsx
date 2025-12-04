@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 
 const TopicItem = memo(({ 
-  topic, 
+  topic,
+  topicProgress,
   isActive, 
   isAdmin, 
   openMenuId, 
@@ -11,6 +12,10 @@ const TopicItem = memo(({
   onEditTopic, 
   onDeleteTopic 
 }) => {
+  // Fallback để đảm bảo totalWords luôn có giá trị
+  const totalWordsLearned = topicProgress?.totalWordsLearned || 0;
+  const completionRate = topicProgress?.completionRate || 0;
+
   return (
     <div
       className={`topic-item ${isActive ? 'active' : ''}`}
@@ -22,9 +27,9 @@ const TopicItem = memo(({
       <div className="topic-info">
         <h4 className="topic-title">{topic.name}</h4>
         <div className="topic-stats">
-          <span className="topic-words">{topic.learnedWords ?? 0}/{topic.totalWords ?? 0} từ</span>
+          <span className="topic-words">{totalWordsLearned}/{topic.totalWords ?? 0} từ</span>
           <div className="topic-stats-right">
-            <span className="topic-progress">{topic.progress ?? 0}%</span>
+            <span className="topic-progress">{completionRate}%</span>
             {isAdmin && (
               <div className="topic-menu-container">
                 <button 

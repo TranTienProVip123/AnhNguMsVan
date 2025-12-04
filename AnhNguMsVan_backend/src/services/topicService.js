@@ -58,8 +58,8 @@ export const createTopic = async (payload) => {
       description: topic.description,
       category: topic.category,
       totalWords: topic.totalWords,
-      progress: topic.progress || 0,
-      learnedWords: topic.learnedWords || 0
+      progress: 0,
+      learnedWords: 0
     }
   };
 };
@@ -94,6 +94,8 @@ export const addWordToTopic = async (topicId, payload) => {
     id: payload._id,
     english: payload.english,
     vietnamese: payload.vietnamese,
+    phoneticUS: payload.phoneticUS,
+    phoneticUK: payload.phoneticUK,
     definition: payload.definition,
     meaning: payload.meaning,
     example: payload.example,
@@ -127,6 +129,8 @@ export const updateWordInTopic = async (topicId, wordId, payload) => {
     ...existingWord,
     english: payload.english ?? existingWord.english,
     vietnamese: payload.vietnamese ?? existingWord.vietnamese,
+    phoneticUS: payload.phoneticUS ?? existingWord.phoneticUS,
+    phoneticUK: payload.phoneticUK ?? existingWord.phoneticUK,
     definition: payload.definition ?? existingWord.definition,
     meaning: payload.meaning ?? existingWord.meaning,
     example: payload.example ?? existingWord.example,

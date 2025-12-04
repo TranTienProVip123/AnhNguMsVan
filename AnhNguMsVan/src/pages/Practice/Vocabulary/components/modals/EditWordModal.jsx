@@ -5,6 +5,8 @@ const EditWordModal = ({ isOpen, word, topicId, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     english: "",
     vietnamese: "",
+    phoneticUS: "",
+    phoneticUK: "",
     definition: "",
     meaning: "",
     example: "",
@@ -22,6 +24,8 @@ const EditWordModal = ({ isOpen, word, topicId, onClose, onSubmit }) => {
       setFormData({
         english: word.english || "",
         vietnamese: word.vietnamese || "",
+        phoneticUS: word.phoneticUS || "",
+        phoneticUK: word.phoneticUK || "",
         definition: word.definition || "",
         meaning: word.meaning || "",
         example: word.example || "",
@@ -96,6 +100,27 @@ const EditWordModal = ({ isOpen, word, topicId, onClose, onSubmit }) => {
                 onChange={(e) => setFormData({ ...formData, vietnamese: e.target.value })}
                 placeholder="gia đình"
                 required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="phoneticUS">Phiên âm US (IPA)</label>
+              <input
+                type="text"
+                id="editPhoneticUS"
+                value={formData.phoneticUS}
+                onChange={(e) => setFormData({ ...formData, phoneticUS: e.target.value })}
+                placeholder="ˈfæm.əl.i"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phoneticUK">Phiên âm UK (IPA)</label>
+              <input
+                type="text"
+                id="editPhoneticUK"
+                value={formData.phoneticUK}
+                onChange={(e) => setFormData({ ...formData, phoneticUK: e.target.value })}
+                placeholder="ˈfæm.ɪ.li"
               />
             </div>
           </div>

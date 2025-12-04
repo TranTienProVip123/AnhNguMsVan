@@ -5,6 +5,7 @@ import {
   updateCourse,
   deleteCourse,
   getCourseById,
+  startLearningCourse
 } from "../services/courseService.js";
 
 export const getCourses = async (req, res, next) => {
@@ -135,6 +136,31 @@ export const deleteCourseController = async (req, res, next) => {
       success: true,
       message: "Xóa course thành công",
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const startCourseController = async (req, res, next) => {
+  try {
+    const { courseId } = req.params;
+
+    const result = await startLearningCourse(courseId);
+
+    if (result.reason === "NOT_FOUND") {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy khóa học"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        learnerCount: result.learnerCount
+      }
+    });
+
   } catch (err) {
     next(err);
   }

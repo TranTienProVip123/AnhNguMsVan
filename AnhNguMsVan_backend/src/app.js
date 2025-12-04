@@ -7,6 +7,7 @@ import consultationRoutes from './routes/consultationRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import topicsRoutes from './routes/topicsRoutes.js';
+import progressRoutes from './routes/progressRoutes.js';
 import errorHandler from './middleware/errorHandlers.js';
 import { config } from './config/config.js';
 
@@ -22,6 +23,7 @@ app.use('/api/consultations', consultationRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/topics', topicsRoutes);
+app.use('/api/progress', progressRoutes);
 app.use(errorHandler);
 
 const PORT = config.port || 4000;
