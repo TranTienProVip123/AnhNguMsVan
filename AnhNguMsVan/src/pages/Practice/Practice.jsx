@@ -19,12 +19,15 @@ const Practice = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Lấy real-time learner count khi user click vào khóa học
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/courses`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Tải dữ liệu thất bại");
+
+        // BE đã populate stats.learnerCount từ learners.length
         setCourses(data.data?.items || []);
       } catch (err) {
         setError(err.message);
@@ -51,7 +54,57 @@ const Practice = () => {
     handleCloseForm();
   };
 
-  const handleCourseClick = (id) => navigate(`/vocabulary?courseId=${id}`);
+  // Khi user click vào khóa học + điều hướng + 1 learner
+  const handleCourseClick = async (id) => {
+    // 1. Optimistic update - Tăng count ngay trên UI
+    setCourses(prevCourses => 
+      prevCourses.map(course => 
+        course._id === id 
+          ? { 
+              ...course, 
+              stats: { 
+                ...course.stats, 
+                learnerCount: (course.stats?.learnerCount || 0) + 1 
+              } 
+            }
+          : course
+      )
+    );
+
+    // 2. Navigate ngay (không đợi API)
+    navigate(`/vocabulary?courseId=${id}`);
+
+    // 3. Background: Track vào server
+      try {
+        const response =await fetch(`${API_BASE_URL}/api/courses/${id}/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        // console.log('✅ Tracked:', data);
+        
+      } catch (error) {
+        console.error('Track learner failed:', error);
+        // Rollback nếu API fail (optional)
+        setCourses(prevCourses => 
+          prevCourses.map(course => 
+            course._id === id 
+              ? { 
+                  ...course, 
+                  stats: { 
+                    ...course.stats, 
+                    learnerCount: (course.stats?.learnerCount || 0) - 1 
+                  } 
+                }
+              : course
+          )
+        );
+      }
+  };
+    
   const toggleModal = () => setIsModalOpen((v) => !v);
   const openCreateForm = () => {
     setFormMode("create");

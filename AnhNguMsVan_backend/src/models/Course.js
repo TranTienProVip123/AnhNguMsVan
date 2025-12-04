@@ -24,9 +24,14 @@ const courseSchema = new Schema(
       wordCount: { type: Number, default: 0, min: 0 },
       learnerCount: { type: Number, default: 0, min: 0 }
     },
+    // Số lượng học viên mới
+    learners: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' }
   },
   { timestamps: true }
 );
+
+//thêm index để tối ưu query
+
 
 export default model('Course', courseSchema);

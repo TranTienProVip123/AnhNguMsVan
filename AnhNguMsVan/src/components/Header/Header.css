@@ -169,6 +169,7 @@ nav ul li:hover::after {
     display: none;
 }
 
+
 @media (max-width: 1200px) {
     header {
         padding: 0 50px;

@@ -5,6 +5,8 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     english: "",
     vietnamese: "",
+    phoneticUS: "",
+    phoneticUK: "",
     definition: "",
     meaning: "",
     example: "",
@@ -48,6 +50,8 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
       setFormData({
         english: "",
         vietnamese: "",
+        phoneticUS: "",
+        phoneticUK: "",
         definition: "",
         meaning: "",
         example: "",
@@ -66,6 +70,8 @@ const AddWordModal = ({ isOpen, topic, onClose, onSubmit }) => {
     setFormData({
       english: "",
       vietnamese: "",
+      phoneticUS: "",
+      phoneticUK: "",
       definition: "",
       meaning: "",
       example: "",

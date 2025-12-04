@@ -51,3 +51,26 @@ export const getCourseById = async (id) => {
   if (!course) return { reason: "NOT_FOUND" };
   return { course };
 };
+
+// Hàm để người dùng bắt đầu học một khóa học và list ra UI
+export const startLearningCourse = async (courseId) => {
+  const course = await Course.findByIdAndUpdate(
+    courseId,
+    {
+      $inc: { 'stats.learnerCount': 1 } // Tăng 1 unit
+    },
+    { 
+      new: true, // Trả về document sau khi update
+      runValidators: true 
+    }
+  );
+
+  if (!course) {
+    return { reason: "NOT_FOUND" };
+  }
+
+  return {
+    success: true,
+    learnerCount: course.stats.learnerCount
+  };
+};
