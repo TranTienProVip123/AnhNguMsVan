@@ -116,7 +116,7 @@ const PracticeCard = memo(
 
     const handleKeyPress = (e) => {
       if (e.key === "Enter" && !showAnswer) {
-        onCheckAnswer();
+        handleCheckAnswer();
       }
     };
 
@@ -143,7 +143,7 @@ const PracticeCard = memo(
     // UPDATED: Handle "Không biết" - Gọi onDontKnow và flip card
     const handleDontKnow = () => {
       // Kiểm tra auth
-      if(handleCheckAuth()) {
+      if(!handleCheckAuth()) {
         return;
       } 
 

@@ -77,9 +77,9 @@ export const updateTopic = async (id, payload) => {
 };
 
 export const softDeleteTopic = async (id) => {
-  const topic = await Topic.findByIdAndDelete(id);
+  const topic = await Topic.findById(id);
   if (!topic) return { reason: 'NOT_FOUND' };
-  // topic.isActive = false;
+  topic.isActive = false;
 
   await topic.save();
   return {};

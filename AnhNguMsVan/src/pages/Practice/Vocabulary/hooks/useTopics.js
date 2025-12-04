@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Topic from '../../../../../../AnhNguMsVan_backend/src/models/Topic';
 
 // Base URL chỉ là host, không kèm /api để tránh lặp
 const API_BASE = import.meta?.env?.VITE_API_URL
@@ -79,30 +80,26 @@ export const useTopics = (token, courseId) => {
     if (result.success) {
       const newTopic = { ...result.data, id: result.data.id || result.data._id };
 
-      setTopics((prev) => {
-        const next = [...prev, newTopic];
+      //Cập nhật vào state để UI thấy liền
+      setTopics((prev) => [...prev, newTopic]);
 
-        // Nếu đang trong một course, gắn topic mới vào course
-        if (courseId && newTopic.id) {
-          const updatedTopicIds = next.map((t) => t._id || t.id);
-          fetch(`${COURSES_ADMIN_API}/${courseId}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ topics: updatedTopicIds })
-          }).catch((err) => console.error('Error attaching topic to course', err));
-        }
+      //Nếu đang trong 1 course, cập nhật topic vào course đó
+      if (courseId && newTopic.id) {
+        const updatedTopicIds = [...topics.map((t) => t._id || t.id), newTopic.id];
+        await fetch(`${COURSES_ADMIN_API}/${courseId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ topics: updatedTopicIds })
+        }).catch((err) => console.error('Error attaching topic to course', err));
+      }
 
-        return next;
-      });
-
-      // Đồng bộ lại danh sách từ server để chắc chắn dữ liệu mới nhất
       await fetchTopics();
     }
     return result;
-  }, [token, courseId, fetchTopics]);
+  }, [token, courseId, fetchTopics, topics]);
 
   // Update topic
   const updateTopic = useCallback(async (topicId, topicData) => {
@@ -127,7 +124,7 @@ export const useTopics = (token, courseId) => {
 
   // Delete topic
   const deleteTopic = useCallback(async (topicId) => {
-    const response = await fetch(`${TOPICS_API}/${topicId}`, {
+    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });

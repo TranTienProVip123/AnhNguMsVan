@@ -48,7 +48,7 @@ const Login = () => {
         : (location.state?.from || "/");
       navigate(redirectPath, { replace: true });
     } catch (err) {
-      setLoginError('Không thể kết nối máy chủ (Google)');
+      setLoginError('Không thể kết nối máy chủ (Google)', err.message);
     } finally {
       setLoginLoading(false);
     }
@@ -140,7 +140,7 @@ const Login = () => {
       setIsRegister(false);
       setForm({ email: '', name: '', password: '', confirmPassword: '' });
     } catch (err) {
-      setError('Không thể kết nối máy chủ');
+      setError('Không thể kết nối máy chủ', err.message);
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +177,7 @@ const Login = () => {
 
       setLoginForm({ email: '', password: '' });
     } catch (err) {
-      setLoginError('Không thể kết nối máy chủ');
+      setLoginError('Không thể kết nối máy chủ', err.message);
     } finally {
       setLoginLoading(false);
     }

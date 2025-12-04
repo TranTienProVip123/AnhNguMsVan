@@ -77,9 +77,9 @@ topicSchema.set('toObject', {
 });
 
 // Index để tăng performance
-topicSchema.index({ name: 1 });
-topicSchema.index({ category: 1 });
-topicSchema.index({ isActive: 1 });
+// topicSchema.index({ name: 1 });
+// topicSchema.index({ category: 1 });
+// topicSchema.index({ isActive: 1 });
 
 const Topic = mongoose.model('Topic', topicSchema);
 

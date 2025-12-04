@@ -20,11 +20,11 @@ export const useWordNavigation = (selectedTopic, currentTopicIndex, topics) => {
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const normalizedCorrectAnswer = correctAnswer.trim().toLowerCase();
     
-    console.log('Checking answer:', {
-      userInput: normalizedUserAnswer,
-      correctAnswer: normalizedCorrectAnswer,
-      isMatch: normalizedUserAnswer === normalizedCorrectAnswer
-    });
+    // console.log('Checking answer:', {
+    //   userInput: normalizedUserAnswer,
+    //   correctAnswer: normalizedCorrectAnswer,
+    //   isMatch: normalizedUserAnswer === normalizedCorrectAnswer
+    // });
 
     const answerIsCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
     

@@ -45,27 +45,31 @@ const Practice = () => {
   };
 
   const handleCreated = (newCourse) => {
-    setCourses(prev => [...prev, newCourse]);
+    setCourses((prev) => [...prev, newCourse]);
     handleCloseForm();
   };
 
   const handleUpdated = (updatedCourse) => {
-    setCourses((prev) => prev.map((course) => (course._id === updatedCourse._id ? updatedCourse : course)));
+    setCourses((prev) =>
+      prev.map((course) =>
+        course._id === updatedCourse._id ? updatedCourse : course
+      )
+    );
     handleCloseForm();
   };
 
   // Khi user click vào khóa học + điều hướng + 1 learner
   const handleCourseClick = async (id) => {
     // 1. Optimistic update - Tăng count ngay trên UI
-    setCourses(prevCourses => 
-      prevCourses.map(course => 
-        course._id === id 
-          ? { 
-              ...course, 
-              stats: { 
-                ...course.stats, 
-                learnerCount: (course.stats?.learnerCount || 0) + 1 
-              } 
+    setCourses((prevCourses) =>
+      prevCourses.map((course) =>
+        course._id === id
+          ? {
+              ...course,
+              stats: {
+                ...course.stats,
+                learnerCount: (course.stats?.learnerCount || 0) + 1,
+              },
             }
           : course
       )
@@ -75,36 +79,35 @@ const Practice = () => {
     navigate(`/vocabulary?courseId=${id}`);
 
     // 3. Background: Track vào server
-      try {
-        const response =await fetch(`${API_BASE_URL}/api/courses/${id}/start`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/courses/${id}/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        const data = await response.json();
-        // console.log('✅ Tracked:', data);
-        
-      } catch (error) {
-        console.error('Track learner failed:', error);
-        // Rollback nếu API fail (optional)
-        setCourses(prevCourses => 
-          prevCourses.map(course => 
-            course._id === id 
-              ? { 
-                  ...course, 
-                  stats: { 
-                    ...course.stats, 
-                    learnerCount: (course.stats?.learnerCount || 0) - 1 
-                  } 
-                }
-              : course
-          )
-        );
-      }
+      const data = await response.json();
+      // console.log('✅ Tracked:', data);
+    } catch (error) {
+      console.error("Track learner failed:", error);
+      // Rollback nếu API fail (optional)
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course._id === id
+            ? {
+                ...course,
+                stats: {
+                  ...course.stats,
+                  learnerCount: (course.stats?.learnerCount || 0) - 1,
+                },
+              }
+            : course
+        )
+      );
+    }
   };
-    
+
   const toggleModal = () => setIsModalOpen((v) => !v);
   const openCreateForm = () => {
     setFormMode("create");
@@ -136,7 +139,7 @@ const Practice = () => {
       alert(err.message);
     }
   };
-  
+
   const renderSection = (title, typeFilter) => {
     const list = courses.filter((c) => c.type === typeFilter);
     if (list.length === 0) return null;
@@ -144,7 +147,11 @@ const Practice = () => {
       <div className="practice-container">
         <div className="section-header">
           <h2 className="section-title">{title}</h2>
-          {user?.role === "admin" && <button className="add-btn" onClick={openCreateForm}>+</button>}
+          {user?.role === "admin" && (
+            <button className="add-btn" onClick={openCreateForm}>
+              +
+            </button>
+          )}
         </div>
         <div className="courses-grid">
           {list.map((course) => (
@@ -157,18 +164,31 @@ const Practice = () => {
                 <h3 className="course-title">{course.title}</h3>
                 <p className="course-desc">{course.description}</p>
                 <div className="course-stats">
-                  <span className="stat-item">👥 {course.stats?.learnerCount ?? 0} học viên</span>
-                  <span className="stat-item">📚 {course.stats?.wordCount ?? 0} từ</span>
+                  <span className="stat-item">
+                    👥 {course.stats?.learnerCount ?? 0} học viên
+                  </span>
+                  <span className="stat-item">
+                    📚 {course.stats?.wordCount ?? 0} từ
+                  </span>
                 </div>
-                <button className="start-btn" onClick={() => handleCourseClick(course._id)}>
+                <button
+                  className="start-btn"
+                  onClick={() => handleCourseClick(course._id)}
+                >
                   Bắt đầu học
                 </button>
                 {user?.role === "admin" && (
                   <div className="admin-actions">
-                    <button className="ghost-btn" onClick={() => openEditForm(course)}>
+                    <button
+                      className="ghost-btn"
+                      onClick={() => openEditForm(course)}
+                    >
                       Edit
                     </button>
-                    <button className="ghost-btn" onClick={() => handleDelete(course._id)}>
+                    <button
+                      className="ghost-btn"
+                      onClick={() => handleDelete(course._id)}
+                    >
                       Delete
                     </button>
                   </div>
@@ -194,7 +214,8 @@ const Practice = () => {
             <div className="practice-hero-text">
               <h1>Học từ vựng tiếng Anh</h1>
               <p className="practice-subtitle">
-                Học từ vựng hiệu quả với phương pháp Lặp lại ngắt quãng + Gợi nhớ chủ động
+                Học từ vựng hiệu quả với phương pháp Lặp lại ngắt quãng + Gợi
+                nhớ chủ động
               </p>
             </div>
             <div className="info-box-trigger" onClick={toggleModal}>
@@ -211,7 +232,9 @@ const Practice = () => {
         {isModalOpen && (
           <div className="modal-overlay" onClick={toggleModal}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={toggleModal}>✕</button>
+              <button className="modal-close" onClick={toggleModal}>
+                ✕
+              </button>
 
               <h2 className="modal-title">
                 <span className="modal-icon">💡</span>
@@ -221,7 +244,10 @@ const Practice = () => {
               <div className="modal-body">
                 <div className="method-item">
                   <h3>🔄 Spaced Repetition (Lặp lại ngắt quãng)</h3>
-                  <p>Ôn tập theo khoảng thời gian tăng dần để tối ưu trí nhớ dài hạn:</p>
+                  <p>
+                    Ôn tập theo khoảng thời gian tăng dần để tối ưu trí nhớ dài
+                    hạn:
+                  </p>
                   <ul>
                     <li>📅 Ngày 1: Học từ mới</li>
                     <li>📅 Ngày 2: Ôn lần 1</li>
@@ -235,12 +261,17 @@ const Practice = () => {
                 <div className="method-item">
                   <h3>🧠 Active Recall (Gợi nhớ chủ động)</h3>
                   <p>Nhìn từ tiếng Anh → tự nhớ nghĩa → kiểm tra đáp án.</p>
-                  <p className="highlight-text">✨ Ghi nhớ sâu hơn nhiều lần so với học thụ động</p>
+                  <p className="highlight-text">
+                    ✨ Ghi nhớ sâu hơn nhiều lần so với học thụ động
+                  </p>
                 </div>
 
                 <div className="method-combine">
                   <h3>🎯 Kết hợp = siêu hiệu quả</h3>
-                  <p>Hệ thống nhắc ôn đúng lúc với gợi nhớ chủ động. 15 phút/ngày để nhớ từ vựng lâu dài.</p>
+                  <p>
+                    Hệ thống nhắc ôn đúng lúc với gợi nhớ chủ động. 15 phút/ngày
+                    để nhớ từ vựng lâu dài.
+                  </p>
                 </div>
               </div>
             </div>
