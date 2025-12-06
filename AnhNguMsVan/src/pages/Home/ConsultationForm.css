@@ -253,6 +253,54 @@
   border: 1px solid #f5c6cb;
 }
 
+.submit-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  z-index: 20;
+}
+
+.submit-toast.success {
+  background: linear-gradient(135deg, #e0f7e9, #c7f0d5);
+  color: #0f5132;
+  border-color: #b4e6c3;
+}
+
+.submit-toast.error {
+  background: linear-gradient(135deg, #ffe8e6, #ffd4d0);
+  color: #842029;
+  border-color: #f5b5b5;
+}
+
+.toast-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.8);
+  color: inherit;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.toast-text {
+  flex: 1;
+  text-align: left;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -317,5 +365,12 @@
   .submit-button {
     font-size: 16px;
     padding: 16px 25px;
+  }
+
+  .submit-toast {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    min-width: auto;
   }
 }

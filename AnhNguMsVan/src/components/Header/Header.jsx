@@ -38,6 +38,13 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  const avatarUrl =
+    user?.avatar ||
+    user?.photoURL ||
+    user?.picture ||
+    (user?.provider === "google" ? user?.photo : null);
+  const fallbackLetter = user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U";
+
   return (
     <header>
       <button
@@ -78,6 +85,10 @@ const Header = () => {
             <Link to="/practice">Luyện tập</Link>
           </li>
 
+          <li onClick={closeMenu}>
+            <Link to="/community">Cộng đồng</Link>
+          </li>
+
           {!user && (
             <li className="nav-register-btn" onClick={closeMenu}>
               <Link to="/login?mode=register">
@@ -92,15 +103,21 @@ const Header = () => {
         {user ? (
           <div className="user-box" ref={profileRef}>
             <button className="avatar-btn" onClick={handleProfileClick} aria-label="Tùy chọn tài khoản">
-              <span className="avatar-fallback">
-                {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || "U"}
-              </span>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={user?.name || "avatar"} className="avatar-img" />
+              ) : (
+                <span className="avatar-fallback">{fallbackLetter}</span>
+              )}
             </button>
             {isProfileOpen && (
               <div className="profile-menu">
                 <div className="profile-top">
                   <div className="avatar-large">
-                    {user.name?.charAt(0)?.toUpperCase() || "U"}
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={user?.name || "avatar"} className="avatar-img large" />
+                    ) : (
+                      fallbackLetter
+                    )}
                   </div>
                   <div className="profile-info">
                     <div className="profile-name">{user.name || "Người dùng"}</div>

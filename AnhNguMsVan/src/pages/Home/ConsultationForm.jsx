@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./ConsultationForm.css";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -10,6 +10,23 @@ const ConsultationForm = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [submitType, setSubmitType] = useState("success"); // success | error
+  const messageTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
+    };
+  }, []);
+
+  const showMessage = (message, type = "success", duration = 3000) => {
+    setSubmitMessage(message);
+    setSubmitType(type);
+    if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = duration
+      ? setTimeout(() => setSubmitMessage(""), duration)
+      : null;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,11 +39,12 @@ const ConsultationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
     setSubmitMessage("");
 
     // Validate
     if (!formData.name.trim() || !formData.phone.trim()) {
-      setSubmitMessage("Vui lòng điền đầy đủ thông tin!");
+      showMessage("Vui long dien day du thong tin!", "error");
       setIsSubmitting(false);
       return;
     }
@@ -34,7 +52,7 @@ const ConsultationForm = () => {
     // Phone validation (Vietnamese format)
     const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
     if (!phoneRegex.test(formData.phone)) {
-      setSubmitMessage("Số điện thoại không hợp lệ!");
+      showMessage("So dien thoai khong hop le!", "error");
       setIsSubmitting(false);
       return;
     }
@@ -54,19 +72,18 @@ const ConsultationForm = () => {
       const data = await response.json();
       if (!response.ok || !data.success) {
         if (Array.isArray(data.errors) && data.errors.length > 0) {
-          setSubmitMessage(data.errors[0].message || "Gửi yêu cầu thất bại.");
+          showMessage(data.errors[0].message || "Gui yeu cau that bai.", "error");
         } else {
-          setSubmitMessage(data.message || "Gửi yêu cầu thất bại.");
+          showMessage(data.message || "Gui yeu cau that bai.", "error");
         }
         return;
       }
 
-      setSubmitMessage("Gửi thành công! Ms Vân sẽ liên hệ bạn sớm nhất.");
+      showMessage("Gui thanh cong! Ms Van se lien he ban som nhat.", "success");
       setFormData({ name: "", phone: "" });
-      setTimeout(() => setSubmitMessage(""), 3000);
     } catch (error) {
       console.error("Send consultation error:", error);
-      setSubmitMessage("Có lỗi xảy ra. Vui lòng thử lại!");
+      showMessage("Co loi xay ra. Vui long thu lai!", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -159,10 +176,14 @@ const ConsultationForm = () => {
 
             {submitMessage && (
               <div
-                className={`submit-message ${submitMessage.includes("✓") ? "success" : "error"
-                  }`}
+                className={`submit-message submit-toast ${submitType}`}
+                role="status"
+                aria-live="assertive"
               >
-                {submitMessage}
+                <span className="toast-icon">
+                  {submitType === "success" ? "?" : "!"}
+                </span>
+                <span className="toast-text">{submitMessage}</span>
               </div>
             )}
           </form>

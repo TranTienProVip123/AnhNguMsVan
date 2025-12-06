@@ -11,6 +11,7 @@ import UserList from './components/admin/pages/UserList.jsx';
 import ConsultationList from './components/admin/pages/ConsultationList.jsx';
 import Profile from './pages/Profile/Profile.jsx';
 import VerifyEmail from './pages/VerifyEmail/VerifyEmail.jsx';
+import CommunityPage from './pages/Community/CommunityPage.jsx';
 
 const App = () => {
     return (
@@ -24,6 +25,7 @@ const App = () => {
                 <Route path="/roadmap/giao-tiep" element={<RoadmapGiaoTiep />} />
                 <Route path="/profile" element={<ProtectedRoute> <Profile /> </ProtectedRoute>} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/community" element={<CommunityPage />} />
 
                 <Route path="/admin" element={<AdminDashboard />}>
                     <Route path="users" element={<UserList />} />
