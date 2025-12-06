@@ -19,7 +19,7 @@ export const authMiddleware = async (req, res, next) => {
         if (decoded.pwdChangedAt < pwdChanged) {
             return res.status(401).json({ message: 'Token đã hết hiệu lực, vui lòng đăng nhập lại' });
         }
-        req.user = { userId: decoded.userId, role: user.role, pwdChangedAt: decoded.pwdChangedAt };
+        req.user = { userId: decoded.userId || decoded.id || decoded._id, role: user.role, pwdChangedAt: decoded.pwdChangedAt };
         next();
     } catch (err) {
         return res.status(401).json({ message: "Token không hợp lệ hoặc đã hết hạn!" });

@@ -8,6 +8,8 @@ const PracticeCard = memo(
     wordIndex,
     totalWords,
     userAnswer,
+    onProgressUpdate,
+    progress,
     setUserAnswer,
     showAnswer,
     isCorrect,
@@ -18,14 +20,16 @@ const PracticeCard = memo(
     isAdmin,
     onEditWord,
     onDeleteWord,
+    courseId,
+    topicId,
   }) => {
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const courseId = queryParams.get('courseId');
-    const topicId = queryParams.get('topicId');
-    
+    // const location = useLocation();
+    // const queryParams = new URLSearchParams(location.search);
+    // const courseId = queryParams.get('courseId');
+    // const topicId = queryParams.get('topicId');
+
     const { user, token } = useAuth();
-    const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
     const navigate = useNavigate();
     const [showAuthBanner, setShowAuthBanner] = useState(false);
     // Existing hooks
@@ -40,7 +44,7 @@ const PracticeCard = memo(
     const [topicProgress, setTopicProgress] = useState({
       totalWordsLearned: 0,
       totalWordsInTopic: 0,
-      completionRate: 0
+      completionRate: 0,
     });
 
     const wordChars = useMemo(() => {
@@ -48,18 +52,36 @@ const PracticeCard = memo(
       return correctAnswer.english.split("");
     }, [correctAnswer?.english]);
 
+    const status = progress?.status || "not_started";
+    // Status colors
+    // const getStatusColor = () => {
+    //   switch (status) {
+    //     case 'completed': return '#28a745'; // Green
+    //     case 'in_progress': return '#ffc107'; // Yellow
+    //     default: return '#6c757d'; // Gray
+    //   }
+    // };
+
     // Dòng 50-70: UPDATED - Fetch topic progress khi mount
     useEffect(() => {
       const fetchTopicProgress = async () => {
-        if (!user || !token || !courseId || !topicId) return;
+        if (!user || !token || !courseId || !topicId) {
+          console.warn("⚠️ Missing data for progress:", {
+            user: !!user,
+            token: !!token,
+            courseId,
+            topicId,
+          });
+          return;
+        }
 
         try {
           const response = await fetch(
             `${API_BASE_URL}/api/progress/topic/${topicId}?courseId=${courseId}`,
             {
               headers: {
-                'Authorization': `Bearer ${token}`
-              }
+                Authorization: `Bearer ${token}`,
+              },
             }
           );
 
@@ -68,12 +90,12 @@ const PracticeCard = memo(
             setTopicProgress(data.data);
           }
         } catch (error) {
-          console.error('Fetch progress failed:', error);
+          console.error("Fetch progress failed:", error);
         }
       };
 
       fetchTopicProgress();
-    }, [user, token, courseId, topicId]);
+    }, [user, token, courseId, topicId, API_BASE_URL]);
 
     const displayChars = useMemo(() => {
       return wordChars.map((char, index) => {
@@ -143,18 +165,21 @@ const PracticeCard = memo(
     // UPDATED: Handle "Không biết" - Gọi onDontKnow và flip card
     const handleDontKnow = () => {
       // Kiểm tra auth
-      if(!handleCheckAuth()) {
+      if (!handleCheckAuth()) {
         return;
-      } 
+      }
 
       onDontKnow(); // Gọi callback từ parent để set showAnswer = true
       handleViewDetail(); // Auto flip để xem chi tiết
     };
 
     const handleCheckAnswer = async () => {
+      // console.log("🎯 [PracticeCard] handleCheckAnswer START");
+
       // Kiểm tra auth trước
       if (!handleCheckAuth()) {
-        return; // Dừng lại nếu chưa login
+        console.log("❌ [PracticeCard] Auth failed");
+        return;
       }
 
       // Kiểm tra đáp án
@@ -162,38 +187,90 @@ const PracticeCard = memo(
       const normalizedCorrectAnswer = word.english.trim().toLowerCase();
 
       if (normalizedUserAnswer === normalizedCorrectAnswer) {
-        // Đúng: Flip và gọi onCheckAnswer
-        onCheckAnswer();
-        handleViewDetail();
-      // Save progress to backend
+
+        // ✅ FIX: Set showAnswer trước, NHƯNG chưa flip
+        onCheckAnswer(); // Set showAnswer = true
+
+        // ✅ FIX: Save progress TRƯỚC KHI flip card
         if (user && token && courseId && topicId) {
           try {
             const response = await fetch(`${API_BASE_URL}/api/progress/word`, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 courseId,
                 topicId,
                 wordId: word._id,
-                isCorrect: true
-              })
+                isCorrect: true,
+              }),
             });
 
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(
+                "❌ [PracticeCard] HTTP Error:",
+                response.status,
+                errorText
+              );
+              throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
+
             if (data.success) {
+
               // Update local progress
               setTopicProgress(data.data);
+
+              // ✅ Notify parent component
+              if (onProgressUpdate) {
+                onProgressUpdate(topicId, data.data);
+
+              } else {
+                console.error(
+                  "❌ [PracticeCard] onProgressUpdate callback not provided!"
+                );
+              }
+
+              // ✅ FIX: Flip card SAU KHI đã save xong
+              handleViewDetail();
+            } else {
+              console.error(
+                "❌ [PracticeCard] API returned success: false",
+                data
+              );
+              alert(
+                "Không thể lưu tiến độ: " + (data.message || "Unknown error")
+              );
+
+              // Vẫn flip card để user có thể tiếp tục
+              handleViewDetail();
             }
           } catch (error) {
-            console.error('Save progress failed:', error);
+            alert("Lỗi khi lưu tiến độ: " + error.message);
+
+            // Vẫn flip card để user có thể tiếp tục
+            handleViewDetail();
           }
+        } else {
+          console.warn("⚠️ [PracticeCard] Missing required data:", {
+            hasUser: !!user,
+            hasToken: !!token,
+            hasCourseId: !!courseId,
+            hasTopicId: !!topicId,
+          });
+
+          // Không có user/token → Vẫn flip card
+          handleViewDetail();
         }
       } else {
-        // Sai: Chỉ báo lỗi, không flip, cho phép nhập lại
-        // Thêm class shake để hiệu ứng rung
+        console.log("❌ [PracticeCard] Wrong answer");
+
+        // Sai: Shake animation
         const inputElement = document.querySelector(
           ".answer-input-group input"
         );
@@ -441,7 +518,7 @@ const PracticeCard = memo(
               </p>
             )}
           </div>
-          
+
           {/* UPDATED: Hint System - Ẩn khi showAnswer = true */}
           {!showAnswer && (
             <div className="hint-section">

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, lazy, Suspense } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import Header from "../../../components/Header/Header.jsx";
 import PracticeCard from "./components/PracticeCard.jsx";
@@ -22,10 +22,14 @@ const EditWordModal = lazy(() => import("./components/modals/EditWordModal.jsx")
 const Vocabulary = () => {
   const { user, token } = useAuth();
   const location = useLocation();
-  const courseIdFromQuery = new URLSearchParams(location.search).get("courseId");
-  const courseId = courseIdFromQuery || location.state?.courseId;
+  const queryParams = new URLSearchParams(location.search);
+
+  const courseId = queryParams.get('courseId');
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  // state - component cha quản lý
+  const [topicsProgress, setTopicsProgress] = useState({});
 
   // Modals state
   const [isAddTopicModalOpen, setIsAddTopicModalOpen] = useState(false);
@@ -88,13 +92,23 @@ const Vocabulary = () => {
   }, [openMenuId]);
 
   // Topic handlers
+  // Vocabulary.jsx - Thêm console.log để debug
   const handleTopicClick = useCallback(
     (topicIndex) => {
+      const topic = topics[topicIndex];
+      
+      console.log('📌 Topic clicked:', {
+        index: topicIndex,
+        topic: topic,
+        topicId: topic.id || topic._id,
+        courseId: courseId
+      });
+
       setCurrentTopicIndex(topicIndex);
       resetWordState();
-      fetchTopicDetail(topics[topicIndex].id);
+      fetchTopicDetail(topic.id);
     },
-    [topics, resetWordState, fetchTopicDetail]
+    [topics, resetWordState, fetchTopicDetail, courseId]
   );
 
   const toggleMenu = useCallback((e, topicId) => {
@@ -192,6 +206,65 @@ const Vocabulary = () => {
     }
   }, [handleNextWord, resetWordState, fetchTopicDetail, topics]);
 
+  // Fetch course progress khi component mount
+  useEffect(() => {
+    const fetchCourseProgress = async () => {
+      if (!user || !token || !courseId) return;
+
+      try {
+        // console.log('📊 Fetching course progress...');
+        const response = await fetch(
+          `${API_BASE_URL}/api/progress/course/${courseId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        const data = await response.json();
+        // console.log('📊 Course progress response:', data);
+
+        if (data.success && data.data.topics) {
+          // Convert array to map: topicId -> progress
+          const progressMap = {};
+          data.data.topics.forEach(tp => {
+            progressMap[tp.topicId.toString()] = {
+              totalWordsLearned: tp.totalWordsLearned,
+              totalWordsInTopic: tp.totalWordsInTopic,
+              completionRate: tp.completionRate,
+              status: tp.status
+            };
+          });
+          
+          // console.log('📊 Progress map:', progressMap);
+          setTopicsProgress(progressMap);
+        }
+      } catch (error) {
+        console.error('❌ Fetch course progress failed:', error);
+      }
+    };
+
+    fetchCourseProgress();
+  }, [user, token, courseId, API_BASE_URL]);
+
+  // ✅ CALLBACK để update progress từ PracticeCard
+  const handleProgressUpdate = useCallback((topicId, newProgress) => {
+    
+    setTopicsProgress(prev => {
+      const updated = {
+        ...prev,
+        [topicId.toString()]: {
+          totalWordsLearned: newProgress.totalWordsLearned,
+          totalWordsInTopic: newProgress.totalWordsInTopic,
+          completionRate: newProgress.completionRate,
+          status: newProgress.status
+        }
+      };
+      
+      return updated;
+    });
+  }, []);
   // Handle error state
   if (error) {
     return (
@@ -277,6 +350,8 @@ const Vocabulary = () => {
 
             <PracticeCard
               word={currentWord}
+              courseId={courseId}
+              topicId={selectedTopic?.id || selectedTopic?._id}
               wordIndex={currentWordIndex}
               totalWords={totalWordsInTopic}
               userAnswer={userAnswer}
@@ -287,6 +362,8 @@ const Vocabulary = () => {
               onCheckAnswer={handleCheckAnswer}
               onDontKnow={handleDontKnow}
               onNext={handleNext}
+              onProgressUpdate={handleProgressUpdate} // ← Truyền callback
+              progress={topicsProgress[selectedTopic.id?.toString()]}
               isAdmin={isAdmin}
               onEditWord={handleEditWord}
               onDeleteWord={handleDeleteWord}
@@ -299,6 +376,7 @@ const Vocabulary = () => {
             currentTopicIndex={currentTopicIndex}
             isAdmin={isAdmin}
             openMenuId={openMenuId}
+            topicsProgress={topicsProgress}  // <- truyền state xuống
             onTopicClick={handleTopicClick}
             onToggleMenu={toggleMenu}
             onAddWord={openAddWordModal}

@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 
 const TopicItem = memo(({ 
   topic,
-  topicProgress,
+  progress,
   isActive, 
   isAdmin, 
   openMenuId, 
@@ -12,9 +12,20 @@ const TopicItem = memo(({
   onEditTopic, 
   onDeleteTopic 
 }) => {
-  // Fallback để đảm bảo totalWords luôn có giá trị
-  const totalWordsLearned = topicProgress?.totalWordsLearned || 0;
-  const completionRate = topicProgress?.completionRate || 0;
+
+  // Extract progress data với fallback values
+  const totalWordsLearned = progress?.totalWordsLearned || 0;
+  const completionRate = progress?.completionRate || 0;
+  const status = progress?.status || 'not_started';
+
+  // Status colors
+  const getStatusColor = () => {
+    switch (status) {
+      case 'completed': return '#28a745'; // Green
+      case 'in_progress': return '#ffc107'; // Yellow
+      default: return '#6c757d'; // Gray
+    }
+  };
 
   return (
     <div
@@ -60,6 +71,18 @@ const TopicItem = memo(({
             )}
           </div>
         </div>
+        {/* Progress bar */}
+        {totalWordsLearned > 0 && (
+          <div className="topic-progress-bar">
+            <div 
+              className="topic-progress-fill"
+              style={{ 
+                width: `${completionRate}%`,
+                backgroundColor: getStatusColor()
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

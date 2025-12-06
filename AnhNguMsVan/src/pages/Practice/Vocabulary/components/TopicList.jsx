@@ -6,6 +6,7 @@ const TopicList = memo(({
   currentTopicIndex, 
   isAdmin, 
   openMenuId,
+  topicsProgress,
   onTopicClick,
   onToggleMenu,
   onAddWord,
@@ -13,6 +14,7 @@ const TopicList = memo(({
   onDeleteTopic,
   onAddTopicClick
 }) => {
+  
   return (
     <div className="topics-panel">
       <div className="topics-panel-header">
@@ -33,6 +35,7 @@ const TopicList = memo(({
           <TopicItem
             key={topic.id}
             topic={topic}
+            progress={topicsProgress?.[topic.id?.toString()]}
             isActive={index === currentTopicIndex}
             isAdmin={isAdmin}
             openMenuId={openMenuId}

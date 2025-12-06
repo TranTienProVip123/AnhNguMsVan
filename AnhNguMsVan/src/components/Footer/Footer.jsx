@@ -52,7 +52,7 @@ const Footer = () => {
                 </div>
               </div>
             </li>
-            <li>
+            {/* <li>
               <div className="contact-item">
                 <span className="contact-icon">⏰</span>
                 <div className="contact-details">
@@ -62,7 +62,7 @@ const Footer = () => {
                   </p>
                 </div>
               </div>
-            </li>
+            </li> */}
           </ul>
         </div>
 

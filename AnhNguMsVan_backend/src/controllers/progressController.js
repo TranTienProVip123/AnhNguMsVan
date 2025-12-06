@@ -8,7 +8,17 @@ import {
 // POST /api/progress/word - Update progress khi học xong 1 từ
 export const updateWordProgressController = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
+    // VALIDATION: Kiểm tra userId
+    if (!userId) {
+      console.error('❌ [CONTROLLER] No userId - req.user:', req.user);
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - No user ID found'
+      });
+    }
+
+    console.log('✅ [CONTROLLER] userId:', userId);
     const { courseId, topicId, wordId, isCorrect } = req.body;
 
     if (!courseId || !topicId || !wordId) {
@@ -36,7 +46,7 @@ export const updateWordProgressController = async (req, res, next) => {
 // GET /api/progress/topic/:topicId - Lấy progress của 1 topic
 export const getTopicProgressController = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const { topicId } = req.params;
     const { courseId } = req.query;
 
@@ -62,7 +72,7 @@ export const getTopicProgressController = async (req, res, next) => {
 // GET /api/progress/course/:courseId - Lấy progress của course
 export const getCourseProgressController = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const { courseId } = req.params;
 
     const result = await getCourseProgress(userId, courseId);
@@ -77,7 +87,7 @@ export const getCourseProgressController = async (req, res, next) => {
 // GET /api/progress/overview - Lấy tổng quan tất cả courses
 export const getOverviewProgressController = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const result = await getAllCoursesProgress(userId);
 

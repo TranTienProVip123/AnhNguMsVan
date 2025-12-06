@@ -2,77 +2,240 @@ import UserProgress from '../models/UserProgress.js';
 import Topic from '../models/Topic.js';
 import Course from '../models/Course.js';
 
-// Lấy hoặc tạo progress cho user
-export const getOrCreateProgress = async (userId, courseId, topicId) => {
+// Lấy hoặc tạo UserProgress document (1 per user)
+export const getOrCreateUserProgress = async (userId) => {
   try {
-    let progress = await UserProgress.findOne({ userId, courseId, topicId });
+    let userProgress = await UserProgress.findOne({ userId });
 
-    if (!progress) {
-      // Lấy topic để tính totalWords
-      const topic = await Topic.findById(topicId);
-      
-      if (!topic) {
-        throw new Error('Topic not found');
-      }
-
-      const totalWords = topic.words?.length || 0; // UPDATED: Lấy từ words array
-
-      progress = new UserProgress({
+    if (!userProgress) {
+      console.log('📝 Creating new UserProgress for user:', userId);
+      userProgress = new UserProgress({ 
         userId,
-        courseId,
-        topicId,
-        totalWordsInTopic: totalWords, // Set đúng số từ hiện tại
-        status: 'not_started'
+        topics: new Map()
       });
-
-      await progress.save();
-    } else {
-      // SYNC: Nếu progress đã tồn tại, sync lại totalWordsInTopic
-      const topic = await Topic.findById(topicId);
-      const currentTotalWords = topic?.words?.length || 0;
-      
-      if (progress.totalWordsInTopic !== currentTotalWords) {
-        progress.totalWordsInTopic = currentTotalWords;
-        
-        // Recalculate completion rate
-        if (currentTotalWords > 0) {
-          progress.completionRate = Math.round(
-            (progress.totalWordsLearned / currentTotalWords) * 100
-          );
-        }
-        
-        await progress.save();
-      }
+      await userProgress.save();
     }
 
-    return progress;
+    return userProgress;
   } catch (error) {
-    console.error('Error in getOrCreateProgress:', error);
+    console.error('Error in getOrCreateUserProgress:', error);
     throw error;
   }
 };
 
-// Update progress khi user học xong 1 từ
+// Lấy hoặc tạo progress của 1 topic
+const getOrCreateTopicProgress = (userProgress, topicId, totalWords = 0) => {
+  const topicIdStr = topicId.toString();
+  
+  let topicProgress = userProgress.topics.get(topicIdStr);
+
+  if (!topicProgress) {
+    console.log('📝 Creating new topic progress for:', topicIdStr);
+    topicProgress = {
+      topicId,
+      completedWords: [],
+      totalWordsInTopic: totalWords
+    };
+    userProgress.topics.set(topicIdStr, topicProgress);
+  }
+
+  return topicProgress;
+};
+
+// Đánh dấu từ đã hoàn thành
+const markWordAsCompleted = (topicProgress, wordId, isCorrectFirstTime = false) => {
+  const wordIdStr = wordId.toString();
+
+  // Kiểm tra từ đã học chưa
+  const existingWord = topicProgress.completedWords.find(
+    w => w.wordId.toString() === wordIdStr
+  );
+
+  if (existingWord) {
+    // Đã học rồi, tăng attempts
+    existingWord.attempts += 1;
+    existingWord.completedAt = new Date();
+    // console.log('📚 Word already learned, increment attempts:', wordIdStr);
+  } else {
+    // Chưa học, thêm mới
+    topicProgress.completedWords.push({
+      wordId,
+      isCorrectFirstTime,
+      attempts: 1,
+      completedAt: new Date()
+    });
+    // console.log('✨ New word learned:', wordIdStr);
+  }
+};
+
+// Tính completion rate của topic
+const calculateTopicCompletionRate = (topicProgress) => {
+  if (!topicProgress || topicProgress.totalWordsInTopic === 0) return 0;
+
+  const learned = topicProgress.completedWords.length;
+  return Math.round((learned / topicProgress.totalWordsInTopic) * 100);
+};
+
+// Tính status của topic
+const getTopicStatus = (topicProgress) => {
+  if (!topicProgress || topicProgress.completedWords.length === 0) {
+    return 'not_started';
+  }
+
+  const completionRate = calculateTopicCompletionRate(topicProgress);
+  
+  if (completionRate === 100) return 'completed';
+  if (completionRate > 0) return 'in_progress';
+  return 'not_started';
+};
+
+// Tính tổng số từ đã học trong tất cả topics
+const calculateTotalWordsLearned = (userProgress) => {
+  let total = 0;
+  
+  for (const [topicId, topicProgress] of userProgress.topics) {
+    total += topicProgress.completedWords.length;
+  }
+
+  return total;
+};
+
+// Lấy tất cả topic IDs của một course
+const getCourseTopicIds = async (courseId) => {
+  const course = await Course.findById(courseId).populate('topics', '_id');
+  return course?.topics?.map(t => t._id.toString()) || [];
+};
+
+// Tính tổng số từ đã học trong course
+const calculateCourseWordsLearned = (userProgress, courseTopicIds) => {
+  let total = 0;
+
+  for (const topicId of courseTopicIds) {
+    const topicProgress = userProgress.topics.get(topicId);
+    if (topicProgress) {
+      total += topicProgress.completedWords.length;
+    }
+  }
+
+  return total;
+};
+
+// Tính tổng số từ trong course
+const calculateTotalWordsInCourse = async (courseId) => {
+  const course = await Course.findById(courseId).populate('topics');
+  return course?.topics?.reduce(
+    (sum, topic) => sum + (topic.words?.length || 0),
+    0
+  ) || 0;
+};
+
+// Tính completion rate của course
+const calculateCourseCompletionRate = (userProgress, courseTopicIds) => {
+  let totalWords = 0;
+  let learnedWords = 0;
+
+  for (const topicId of courseTopicIds) {
+    const topicProgress = userProgress.topics.get(topicId);
+    if (topicProgress) {
+      totalWords += topicProgress.totalWordsInTopic;
+      learnedWords += topicProgress.completedWords.length;
+    }
+  }
+
+  if (totalWords === 0) return 0;
+  return Math.round((learnedWords / totalWords) * 100);
+};
+
+// Tính status của course
+const getCourseStatus = (completionRate) => {
+  if (completionRate === 100) return 'completed';
+  if (completionRate > 0) return 'in_progress';
+  return 'not_started';
+};
+
+// ============ PUBLIC API FUNCTIONS ============
+
+// Update progress khi học xong 1 từ
+// Update progress khi học xong 1 từ
 export const updateWordProgress = async (userId, courseId, topicId, wordId, isCorrect) => {
   try {
-    const progress = await getOrCreateProgress(userId, courseId, topicId);
+   
+    // Validation
+    if (!userId) throw new Error('userId is required');
+    if (!courseId) throw new Error('courseId is required');
+    if (!topicId) throw new Error('topicId is required');
+    if (!wordId) throw new Error('wordId is required');
 
-    // Mark word as completed
-    progress.markWordAsCompleted(wordId, isCorrect);
+    // Lấy user progress
+    const userProgress = await getOrCreateUserProgress(userId);
 
-    await progress.save();
+    // Lấy topic info
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      throw new Error('Topic not found');
+    }
+    const totalWords = topic.words?.length || 0;
 
-    return {
+    // Lấy hoặc tạo topic progress
+    const topicIdStr = topicId.toString();
+    let topicProgress = userProgress.topics.get(topicIdStr);
+
+    if (!topicProgress) {
+      console.log('📝 [SERVICE] Creating new topic progress');
+      topicProgress = {
+        topicId,
+        completedWords: [],
+        totalWordsInTopic: totalWords
+      };
+      userProgress.topics.set(topicIdStr, topicProgress);
+    } else {
+      console.log('  Current learned:', topicProgress.completedWords.length);
+      console.log('  Completed words:', topicProgress.completedWords.map(w => w.wordId.toString()));
+    }
+
+    // BEFORE mark
+    const beforeCount = topicProgress.completedWords.length;
+
+    // Mark word completed
+    markWordAsCompleted(topicProgress, wordId, isCorrect);
+
+    // AFTER mark
+    const afterCount = topicProgress.completedWords.length;
+
+    // Update totalWordsInTopic
+    topicProgress.totalWordsInTopic = totalWords;
+
+    // ✅ FIX 1: Set lại vào Map để trigger change detection
+    userProgress.topics.set(topicIdStr, topicProgress);
+
+    // ✅ FIX 2: Mark as modified để Mongoose biết Map đã thay đổi
+    userProgress.markModified('topics');
+
+    // Save to DB
+    const saveResult = await userProgress.save();
+
+    // ✅ FIX 3: Verify by fetching lại
+    const verified = await UserProgress.findById(userProgress._id);
+    const verifiedTopic = verified.topics.get(topicIdStr);
+
+    // Calculate metrics
+    const completionRate = calculateTopicCompletionRate(topicProgress);
+    const status = getTopicStatus(topicProgress);
+
+    const result = {
       success: true,
       data: {
-        totalWordsLearned: progress.totalWordsLearned,
-        totalWordsInTopic: progress.totalWordsInTopic,
-        completionRate: progress.completionRate,
-        status: progress.status
+        totalWordsLearned: topicProgress.completedWords.length,
+        totalWordsInTopic: topicProgress.totalWordsInTopic,
+        completionRate,
+        status
       }
     };
+
+    return result;
+
   } catch (error) {
-    console.error('Error in updateWordProgress:', error);
+    console.error('💥 [SERVICE] Error in updateWordProgress:', error);
     throw error;
   }
 };
@@ -80,11 +243,11 @@ export const updateWordProgress = async (userId, courseId, topicId, wordId, isCo
 // Lấy progress của 1 topic
 export const getTopicProgress = async (userId, courseId, topicId) => {
   try {
-    const progress = await UserProgress.findOne({ userId, courseId, topicId })
-      .populate('topicId', 'name description')
-      .lean();
+    // console.log('📊 [SERVICE] getTopicProgress:', { userId, topicId });
 
-    if (!progress) {
+    const userProgress = await UserProgress.findOne({ userId });
+
+    if (!userProgress) {
       return {
         totalWordsLearned: 0,
         totalWordsInTopic: 0,
@@ -93,9 +256,26 @@ export const getTopicProgress = async (userId, courseId, topicId) => {
       };
     }
 
-    return progress;
+    const topicProgress = userProgress.topics.get(topicId.toString());
+
+    if (!topicProgress) {
+      return {
+        totalWordsLearned: 0,
+        totalWordsInTopic: 0,
+        completionRate: 0,
+        status: 'not_started'
+      };
+    }
+
+    return {
+      totalWordsLearned: topicProgress.completedWords.length,
+      totalWordsInTopic: topicProgress.totalWordsInTopic,
+      completionRate: calculateTopicCompletionRate(topicProgress),
+      status: getTopicStatus(topicProgress)
+    };
+
   } catch (error) {
-    console.error('Error in getTopicProgress:', error);
+    console.error('💥 [SERVICE] Error in getTopicProgress:', error);
     throw error;
   }
 };
@@ -103,26 +283,48 @@ export const getTopicProgress = async (userId, courseId, topicId) => {
 // Lấy progress của toàn bộ course
 export const getCourseProgress = async (userId, courseId) => {
   try {
-    const allProgress = await UserProgress.find({ userId, courseId })
-      .populate('topicId', 'name')
-      .lean();
+    // console.log('📊 [SERVICE] getCourseProgress:', { userId, courseId });
 
-    // Tính tổng số từ đã học trong course
-    const totalWordsLearned = allProgress.reduce(
-      (sum, p) => sum + p.totalWordsLearned, 
-      0
-    );
+    const userProgress = await UserProgress.findOne({ userId });
 
-    // Lấy tất cả topics trong course để tính tổng từ
-    const course = await Course.findById(courseId).populate('topics');
-    const totalWordsInCourse = course?.topics?.reduce(
-      (sum, topic) => sum + (topic.words?.length || 0),
-      0
-    ) || 0;
+    // Lấy tất cả topic IDs của course
+    const courseTopicIds = await getCourseTopicIds(courseId);
 
-    const completionRate = totalWordsInCourse > 0 
-      ? Math.round((totalWordsLearned / totalWordsInCourse) * 100)
-      : 0;
+    if (!userProgress || courseTopicIds.length === 0) {
+      const totalWordsInCourse = await calculateTotalWordsInCourse(courseId);
+      
+      return {
+        success: true,
+        data: {
+          totalWordsLearned: 0,
+          totalWordsInCourse,
+          completionRate: 0,
+          status: 'not_started',
+          topics: []
+        }
+      };
+    }
+
+    // Tính toán các metrics
+    const totalWordsLearned = calculateCourseWordsLearned(userProgress, courseTopicIds);
+    const totalWordsInCourse = await calculateTotalWordsInCourse(courseId);
+    const completionRate = calculateCourseCompletionRate(userProgress, courseTopicIds);
+    const status = getCourseStatus(completionRate);
+
+    // Lấy progress của từng topic
+    const topicsProgress = [];
+    for (const topicId of courseTopicIds) {
+      const topicProgress = userProgress.topics.get(topicId);
+      if (topicProgress) {
+        topicsProgress.push({
+          topicId: topicProgress.topicId,
+          totalWordsLearned: topicProgress.completedWords.length,
+          totalWordsInTopic: topicProgress.totalWordsInTopic,
+          completionRate: calculateTopicCompletionRate(topicProgress),
+          status: getTopicStatus(topicProgress)
+        });
+      }
+    }
 
     return {
       success: true,
@@ -130,11 +332,13 @@ export const getCourseProgress = async (userId, courseId) => {
         totalWordsLearned,
         totalWordsInCourse,
         completionRate,
-        topicsProgress: allProgress
+        status,
+        topics: topicsProgress
       }
     };
+
   } catch (error) {
-    console.error('Error in getCourseProgress:', error);
+    console.error('💥 [SERVICE] Error in getCourseProgress:', error);
     throw error;
   }
 };
@@ -142,43 +346,133 @@ export const getCourseProgress = async (userId, courseId) => {
 // Lấy overview của tất cả courses
 export const getAllCoursesProgress = async (userId) => {
   try {
-    const allProgress = await UserProgress.find({ userId })
-      .populate('courseId', 'title coverImage')
-      .populate('topicId', 'name')
-      .lean();
+    // console.log('📊 [SERVICE] getAllCoursesProgress:', { userId });
 
-    // Group by courseId
-    const progressByCourse = allProgress.reduce((acc, progress) => {
-      const courseId = progress.courseId._id.toString();
+    const userProgress = await UserProgress.findOne({ userId });
+
+    if (!userProgress || userProgress.topics.size === 0) {
+      return {
+        success: true,
+        data: []
+      };
+    }
+
+    // Lấy tất cả courses user đã học
+    const allCourses = await Course.find().populate('topics');
+    const progressData = [];
+
+    for (const course of allCourses) {
+      const courseTopicIds = course.topics.map(t => t._id.toString());
       
-      if (!acc[courseId]) {
-        acc[courseId] = {
-          courseId: progress.courseId._id,
-          courseTitle: progress.courseId.title,
-          courseCoverImage: progress.courseId.coverImage,
-          totalWordsLearned: 0,
-          topics: []
-        };
+      // Check nếu user có học course này không
+      const hasProgress = courseTopicIds.some(topicId => 
+        userProgress.topics.has(topicId)
+      );
+
+      if (!hasProgress) continue;
+
+      // Tính metrics
+      const totalWordsLearned = calculateCourseWordsLearned(userProgress, courseTopicIds);
+      const completionRate = calculateCourseCompletionRate(userProgress, courseTopicIds);
+      const status = getCourseStatus(completionRate);
+
+      // Lấy progress từng topic
+      const topicsProgress = [];
+      for (const topicId of courseTopicIds) {
+        const topicProgress = userProgress.topics.get(topicId);
+        if (topicProgress) {
+          // Lấy topic name
+          const topic = course.topics.find(t => t._id.toString() === topicId);
+          
+          topicsProgress.push({
+            topicId,
+            topicName: topic?.name || 'Unknown',
+            totalWordsLearned: topicProgress.completedWords.length,
+            totalWordsInTopic: topicProgress.totalWordsInTopic,
+            completionRate: calculateTopicCompletionRate(topicProgress),
+            status: getTopicStatus(topicProgress)
+          });
+        }
       }
 
-      acc[courseId].totalWordsLearned += progress.totalWordsLearned;
-      acc[courseId].topics.push({
-        topicId: progress.topicId._id,
-        topicName: progress.topicId.name,
-        totalWordsLearned: progress.totalWordsLearned,
-        completionRate: progress.completionRate,
-        status: progress.status
+      progressData.push({
+        courseId: course._id,
+        courseTitle: course.title,
+        courseCoverImage: course.coverImage,
+        totalWordsLearned,
+        completionRate,
+        status,
+        topics: topicsProgress
       });
-
-      return acc;
-    }, {});
+    }
 
     return {
       success: true,
-      data: Object.values(progressByCourse)
+      data: progressData
     };
+
   } catch (error) {
-    console.error('Error in getAllCoursesProgress:', error);
+    console.error('💥 [SERVICE] Error in getAllCoursesProgress:', error);
+    throw error;
+  }
+};
+
+// Lấy tổng thống kê của user
+export const getUserStats = async (userId) => {
+  try {
+    const userProgress = await UserProgress.findOne({ userId });
+
+    if (!userProgress) {
+      return {
+        success: true,
+        data: {
+          totalWordsLearned: 0,
+          totalTopicsStarted: 0,
+          totalTopicsCompleted: 0,
+          totalCoursesStarted: 0
+        }
+      };
+    }
+
+    const totalWordsLearned = calculateTotalWordsLearned(userProgress);
+    
+    let totalTopicsStarted = 0;
+    let totalTopicsCompleted = 0;
+
+    for (const [topicId, topicProgress] of userProgress.topics) {
+      if (topicProgress.completedWords.length > 0) {
+        totalTopicsStarted++;
+        
+        if (calculateTopicCompletionRate(topicProgress) === 100) {
+          totalTopicsCompleted++;
+        }
+      }
+    }
+
+    // Đếm số courses đã bắt đầu
+    const allCourses = await Course.find().select('topics');
+    let totalCoursesStarted = 0;
+
+    for (const course of allCourses) {
+      const courseTopicIds = course.topics.map(t => t.toString());
+      const hasProgress = courseTopicIds.some(topicId => 
+        userProgress.topics.has(topicId)
+      );
+      if (hasProgress) totalCoursesStarted++;
+    }
+
+    return {
+      success: true,
+      data: {
+        totalWordsLearned,
+        totalTopicsStarted,
+        totalTopicsCompleted,
+        totalCoursesStarted
+      }
+    };
+
+  } catch (error) {
+    console.error('💥 [SERVICE] Error in getUserStats:', error);
     throw error;
   }
 };
