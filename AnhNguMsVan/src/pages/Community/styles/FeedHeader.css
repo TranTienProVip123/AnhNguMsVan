@@ -1,0 +1,19 @@
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px;
+  color: #0f172a;
+}
+
+.feed-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.sort {
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 14px;
+}

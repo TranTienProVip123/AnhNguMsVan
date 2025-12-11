@@ -1,4 +1,6 @@
 import { CATEGORY_OPTIONS } from "../utils/constants.js";
+import "../styles/CategorySidebar.css";
+import "../styles/CommunityLayout.css"
 
 export const CategorySidebar = ({ activeCategory, onSelect }) => (
   <aside className="community-sidebar">

@@ -1,4 +1,5 @@
 import React from "react";
+import "../styles/FeedHeader.css";
 
 export const FeedHeader = () => (
   <div className="feed-header">

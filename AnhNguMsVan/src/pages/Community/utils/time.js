@@ -1,19 +1,64 @@
-export const formatRelativeTime = (isoString) => {
-  if (!isoString) return "";
+export function formatRelativeTime(inputTime) {
+  if (!inputTime) return "";
 
-  const now = Date.now();
-  const then = new Date(isoString).getTime();
-  const diffMs = Math.max(0, now - then);
+  //kiểm tra biến d có phải đối tượng được tạo từ class Date ko -> true trả -> false ép kiểu
+  const d = inputTime instanceof Date ? inputTime : new Date(inputTime);
+  if (isNaN(d.getTime())) return "";
 
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "Vừa xong";
-  if (mins < 60) return `${mins} phút trước`;
+  //tính chênh lệch mili-giây
+  const now = new Date();
+  const diffMs = now - d;
+  const diffSec = Math.floor(diffMs / 1000); //tính giây
+  const diffMin = Math.floor(diffSec / 60); //tính phút
+  const diffHour = Math.floor(diffMin / 60); // tính giờ
 
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} giờ trước`;
+  //Trạng thái "Vừa xong"
+  if (diffSec < 60) return "Vừa xong";
 
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} ngày trước`;
+  //Trong vòng 1 giờ
+  if (diffMin < 60) return `${diffMin} phút trước`;
 
-  return new Date(isoString).toLocaleDateString();
-};
+  //chuẩn hóa thời điểm và đối tượng cần so sánh
+  const sameDay = isSameDay(d, now);
+  const isYesterday = isDayBefore(d, now);
+
+  //"Hôm nay"
+  if (sameDay) return `Hôm nay lúc ${formatTimeVi(d)}`;
+
+  //"Hôm qua"
+  if (isYesterday) return `Hôm qua lúc ${formatTimeVi(d)}`;
+
+  //"Cùng năm"
+  const sameYear = d.getFullYear() === now.getFullYear();
+  if (sameYear) {
+    return `${d.getDate()} tháng ${d.getMonth() + 1} lúc ${formatTimeVi(d)}`;
+  }
+
+  //"Khác năm"
+  return `${d.getDate()} tháng ${d.getMonth() + 1} ${d.getFullYear()} lúc ${formatTimeVi(d)}`;
+}
+
+//format giờ:phút theo kiểu Việt Nam, 24h
+function formatTimeVi(date) {
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit", //giờ 2 số(09,11,12h)
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+//kiểm tra có cùng ngày không
+function isSameDay(a, b) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+//kiểm tra a có phải là hôm qua so với b ko
+function isDayBefore(a, b) {
+  const yesterday = new Date(b);
+  yesterday.setDate(b.getDate() - 1);
+  return isSameDay(a, yesterday);
+}

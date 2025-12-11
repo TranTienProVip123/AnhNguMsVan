@@ -1,0 +1,155 @@
+.community-page {
+  display: grid;
+  grid-template-columns: minmax(200px, 230px) 1fr minmax(200px, 230px);
+  gap: 18px;
+  padding: 110px 24px 24px;
+  background: #f5f7fb;
+  color: #0f172a;
+  min-height: 100vh;
+  box-sizing: border-box;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  align-items: flex-start;
+}
+
+.community-sidebar,
+.community-stats {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  max-width: 230px;
+  align-self: flex-start;
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+  z-index: 2;
+}
+
+.community-sidebar h4,
+.community-stats h4 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+}
+
+.community-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filters.chips button {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.filters.chips button.active,
+.filters.chips button:hover {
+  background: linear-gradient(135deg, #e0ecff, #e5e7ff);
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.filters button {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.filters button.active,
+.filters button:hover {
+  background: #e5efff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.feed-sentinel {
+  height: 1px;
+}
+
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  z-index: 2000;
+  color: white;
+  opacity: 0.95;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.3s ease;
+}
+
+.toast.success {
+  background-color: #4caf50;
+}
+
+.toast.error {
+  background-color: #f44336;
+}
+
+@media (max-width: 1100px) {
+  .community-page {
+    grid-template-columns: minmax(200px, 230px) 1fr;
+  }
+
+  .community-stats {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .community-page {
+    grid-template-columns: 1fr;
+    padding: 100px 16px 16px;
+  }
+
+  .community-sidebar {
+    order: 2;
+  }
+
+  .community-stats {
+    order: 3;
+  }
+
+  .community-main {
+    order: 1;
+  }
+
+  .filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}

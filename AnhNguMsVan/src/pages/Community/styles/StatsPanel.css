@@ -1,0 +1,29 @@
+.community-stats .stats-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.stat-row strong {
+  color: #2563eb;
+  margin-top: 5px;
+}
+
+.stat-link {
+  margin-top: 12px;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+}

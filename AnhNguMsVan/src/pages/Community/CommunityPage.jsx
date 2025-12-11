@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCommunity } from "./hooks/useCommunity.js";
-import { DEFAULT_CATEGORY, PAGE_SIZE } from "./utils/constants.js";
+import { DEFAULT_CATEGORY } from "./utils/constants.js";
+import { TITLE_MIN_LENGTH, CONTENT_MIN_LENGTH } from "./utils/validation.js";
 
-import "./CommunityPage.css";
+import "./styles/Common.css";
+import "./styles/CommunityLayout.css";
 import { CategorySidebar, Composer, FeedHeader, PostCard, StatsPanel } from "./components";
 
 const CommunityPage = () => {
@@ -14,79 +16,166 @@ const CommunityPage = () => {
   const {
     posts,
     loading,
-    loadingMore,
     error,
     activeCategory,
     setActiveCategory,
     createPost,
+    likePost,
+    addComments,
+    fetchComments,
+    fetchStats,
     setError,
     hasMore,
     loadMore
   } = useCommunity(token);
 
   const [draftContent, setDraftContent] = useState("");
+  const [draftTitle, setDraftTitle] = useState("");
+  const [composerKey, setComposerKey] = useState(0);
+  const [isPosting, setIsPosting] = useState(false);
+  const [toast, setToast] = useState("");
+  const sentinelRef = useRef(null);
+  const isFetchingRef = useRef(false);
+  const toastTimerRef = useRef(null);
+  const errorTimerRef = useRef(null);
+
+  useEffect(() => {
+    isFetchingRef.current = false;
+  }, [activeCategory]);
+
+  const showToast = (msg) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(msg);
+    toastTimerRef.current = setTimeout(() => setToast(""), 2500);
+  };
+
+  const showError = (msg) => {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setError(msg);
+    errorTimerRef.current = setTimeout(() => setError(""), 3000);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(toastTimerRef.current);
+      clearTimeout(errorTimerRef.current);
+    };
+  }, []);
 
   const handleSubmit = async () => {
-    if (!draftContent.trim()) {
-      setError("Nội dung không được để trống.");
+    if (!user) {
+      showError("Vui lòng đăng nhập để đăng bài.");
+      return;
+    }
+    if (isPosting) return;
+    const normalizedTitle = draftTitle.replace(/\s+/g, " ").trim();
+    const normalizedContent = draftContent.replace(/\s+/g, " ").trim();
+
+    if (!normalizedTitle) {
+      showError("Tiêu đề không được để trống.");
+      return;
+    }
+    if (normalizedTitle.length < TITLE_MIN_LENGTH) {
+      showError(`Tiêu đề cần ít nhất ${TITLE_MIN_LENGTH} ký tự.`);
+      return;
+    }
+    if (!normalizedContent) {
+      showError("Nội dung không được để trống.");
+      return;
+    }
+    if (normalizedContent.length < CONTENT_MIN_LENGTH) {
+      showError(`Nội dung cần ít nhất ${CONTENT_MIN_LENGTH} ký tự.`);
       return;
     }
 
-    const created = await createPost({
-      content: draftContent,
-      category: activeCategory || DEFAULT_CATEGORY
-    });
+    setIsPosting(true);
+    try {
+      const created = await createPost({
+        title: normalizedTitle,
+        content: normalizedContent,
+        category: activeCategory || DEFAULT_CATEGORY
+      });
 
-    if (created) {
-      setDraftContent("");
+      if (created) {
+        setDraftTitle("");
+        setDraftContent("");
+        setComposerKey((k) => k + 1); // remount composer -> close
+        showToast("Đã đăng bài.");
+      }
+    } catch (err) {
+      showError("Đăng bài thất bại,hãy đăng nhập để đăng bài.");
+    } finally {
+      setIsPosting(false);
     }
   };
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && !isFetchingRef.current) {
+          isFetchingRef.current = true;
+          Promise.resolve(loadMore()).finally(() => {
+            isFetchingRef.current = false;
+          });
+        }
+      },
+      { root: null, rootMargin: "0px", threshold: 0 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore, activeCategory]);
 
   return (
     <>
       <Header />
+      {toast && <div className="toast success">{toast}</div>}
+      {error && <div className="toast error">{error}</div>}
 
       <div className="community-page light">
         <CategorySidebar activeCategory={activeCategory} onSelect={setActiveCategory} />
 
         <main className="community-main">
           <Composer
+            key={composerKey}
             user={user}
             draftContent={draftContent}
+            draftTitle={draftTitle}
             onChange={setDraftContent}
+            CONTENT_MIN_LENGTH={CONTENT_MIN_LENGTH}
+            onTitleChange={setDraftTitle}
             onSubmit={handleSubmit}
             onCategoryChange={setActiveCategory}
             activeCategory={activeCategory}
             error={error}
+            isPosting={isPosting}
           />
 
           <FeedHeader />
 
-          <div className="feed-note">
-            Hiển thị {PAGE_SIZE} bài mỗi lượt. Nhấn xem thêm để xem các bài viết cũ.
-          </div>
-
           <section className="feed">
             {loading && <div className="inline-hint">Đang tải...</div>}
-            {!loading && posts.length === 0 && (
-              <div className="inline-hint">Chưa có bài viết nào.</div>
-            )}
+            {!loading && posts.length === 0 && <div className="inline-hint">Chưa có bài viết nào.</div>}
 
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onLike={likePost}
+                addComments={addComments}
+                fetchComments={fetchComments}
+              />
             ))}
 
-            {hasMore && (
-              <div className="load-more">
-                <button className="primary" onClick={loadMore} disabled={loadingMore}>
-                  {loadingMore ? "Đang tải..." : "Xem thêm"}
-                </button>
-              </div>
-            )}
+            {hasMore && <div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />}
           </section>
         </main>
 
-        <StatsPanel />
+        <StatsPanel fetchStats={fetchStats} />
       </div>
 
       <Footer />
