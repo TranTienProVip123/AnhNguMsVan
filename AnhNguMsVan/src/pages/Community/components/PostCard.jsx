@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { FiThumbsUp, FiMessageCircle, FiShare2, FiBookmark, FiShield } from "react-icons/fi";
+import { FiThumbsUp, FiMessageCircle, FiShare2, FiBookmark } from "react-icons/fi";
 import { renderAvatar } from "../utils/avatar.jsx";
 import { formatRelativeTime } from "../utils/time.js";
 import { CommentModal } from "./CommentModal.jsx";
@@ -17,15 +17,9 @@ export const PostCard = ({ post, onLike, fetchComments, addComments }) => {
     post.userName ||
     "Người đăng";
 
-  const isAdmin = post.author?.role === "admin" || post.authorRole === "admin" || post.role === "admin";
-
-  const authorAvatar =
-    post.author?.avatar || post.author?.photoURL || post.author?.picture || post.avatar || "";
-
+  const authorAvatar = post.author?.avatar || post.author?.photoURL || post.author?.picture || post.avatar || "";
   const categoryLabel = post.category || "Chưa phân loại";
-
   const timeLabel = formatRelativeTime(post.createdAt || post.created_at || post.createdAtUtc);
-
   const handleToggleComments = () => setShowComments((v) => !v);
 
   return (
@@ -33,14 +27,7 @@ export const PostCard = ({ post, onLike, fetchComments, addComments }) => {
       <div className="post-meta">
         <div className="avatar">{renderAvatar({ name: authorName, avatar: authorAvatar })}</div>
         <div>
-          <div className="post-author">{authorName}
-            {isAdmin && (
-              <span className="badge-pill-admin">
-                <FiShield />
-                ADMIN
-              </span>
-            )}
-          </div>
+          <div className="post-author">{authorName}</div>
           <div className="post-subtitle">
             <span>{timeLabel}</span>
             <span className="dot">·</span>

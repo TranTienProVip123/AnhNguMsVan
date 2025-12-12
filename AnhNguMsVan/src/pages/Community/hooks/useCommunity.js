@@ -51,17 +51,13 @@ export const useCommunity = (token) => {
   }, [activeCategory, fetchPosts]);
 
   const createPost = useCallback(
-    async ({ title, content, category }) => {
+    async ({ content, category }) => {
       if (!token) {
         setError("Vui lòng đăng nhập để đăng bài.");
         return null;
       }
       if (!content?.trim()) {
         setError("Nội dung không được để trống.");
-        return null;
-      }
-      if (!title?.trim()) {
-        setError("Tiêu đề không được để trống.");
         return null;
       }
       try {
@@ -72,7 +68,7 @@ export const useCommunity = (token) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ title, content, category })
+          body: JSON.stringify({ content, category })
         });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.message || "Đăng bài thất bại.");
@@ -93,9 +89,11 @@ export const useCommunity = (token) => {
     if (!token) { setError("Bạn cần đăng nhập để thao tác."); return; }
 
     // optimistic
-    setPosts(prev => prev.map(p => p.id === postId
-      ? { ...p, liked: !p.liked, likesCount: (p.likesCount || 0) + (p.liked ? -1 : 1) }
-      : p));
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const delta = p.liked ? -1 : 1;
+      return { ...p, liked: !p.liked, likesCount: (p.likesCount || 0) + delta };
+    }));
 
     try {
       const res = await fetch(`${API_BASE}/api/community/posts/${postId}/like`, {
@@ -126,7 +124,7 @@ export const useCommunity = (token) => {
     return data.data; // { items, total, page, limit }
   }, [token]);
 
-  const addComments = useCallback(async ({ postId, content }) => {
+  const addComments = useCallback(async ({ postId, content, parentId = null }) => {
     if (!token) { setError("Vui lòng đăng nhập để bình luận."); return null; }
     const normalized = content.replace(/\s+/g, " ").trim();
     if (!normalized) { setError("Nội dung không được để trống."); return null; }
@@ -135,7 +133,7 @@ export const useCommunity = (token) => {
       const res = await fetch(`${API_BASE}/api/community/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content: normalized })
+        body: JSON.stringify({ content: normalized, parentId })
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Bình luận thất bại.");

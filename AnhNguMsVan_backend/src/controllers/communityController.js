@@ -4,12 +4,11 @@ export const createPostController = async (req, res, next) => {
   try {
     const result = await createPost({
       userId: req.user?.userId,
-      title: req.body.title,
       content: req.body.content,
       category: req.body.category
     });
 
-    if (["INVALID", "SHORT_TITLE", "SHORT_CONTENT"].includes(result.reason)) {
+    if (["INVALID", "SHORT_CONTENT"].includes(result.reason)) {
       return res.status(400).json({ success: false, message: result.message });
     }
     if (result.reason === "UNAUTHORIZED") {
@@ -44,11 +43,23 @@ export const likePostController = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-export const addCommentController = async (req, res, next) => {
+export async function addCommentController(req, res, next) {
   try {
-    const result = await addComment({ userId: req.user?.userId, postId: req.params.id, content: req.body.content });
-    if (["INVALID", "SHORT"].includes(result.reason)) return res.status(400).json({ success: false, message: result.message });
-    if (result.reason === "UNAUTHORIZED") return res.status(401).json({ success: false, message: "Unauthorized" });
+    const { id: postId } = req.params;
+    const { content, parentId } = req.body;
+    const userId = req.user?.userId;
+
+    const result = await addComment({ postId, userId, content, parentId });
+
+    if (["INVALID", "SHORT"].includes(result.reason))
+      return res.status(400).json({ success: false, message: result.message });
+    if (result.reason === "UNAUTHORIZED")
+      return res.status(401).json({ success: false, message: "Không có quyền bình luận." });
+    if (result.reason === "NOT_FOUND")
+      return res.status(404).json({ success: false, message: "Không tìm thấy bài viết." });
+    if (result.reason === "PARENT_NOT_FOUND")
+      return res.status(404).json({ success: false, message: "Không tìm thấy comment gốc." });
+
     return res.status(201).json({ success: true, data: result });
   } catch (err) { next(err); }
 };

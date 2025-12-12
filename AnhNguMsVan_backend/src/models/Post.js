@@ -1,8 +1,7 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
 const PostSchema = new mongoose.Schema(
   {
-    title: { type: String, trim: true, default: "" },
     content: { type: String, trim: true, required: true },
     category: { type: String, trim: true, default: "Tất cả" },
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -12,5 +11,7 @@ const PostSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+PostSchema.index({ author: 1, isActive: 1 }); //countDoc
 
 export default mongoose.model("Post", PostSchema);

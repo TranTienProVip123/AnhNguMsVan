@@ -4,22 +4,13 @@ import Like from "../models/Like.js";
 import Comment from "../models/Comment.js";
 
 const DEFAULT_CATEGORY = "Tất cả";
-const MIN_TITLE_LENGTH = 6;
 const MIN_CONTENT_LENGTH = 10;
 
 const normalizeText = (value = "") => value.replace(/\s+/g, " ").trim();
 
-export const createPost = async ({ userId, title, content, category }) => {
-  const normalizedTitle = normalizeText(title);
+export const createPost = async ({ userId, content, category }) => {
   const normalizedContent = normalizeText(content);
   const normalizedCategory = normalizeText(category) || DEFAULT_CATEGORY;
-
-  if (!normalizedTitle) {
-    return { reason: "INVALID", message: "Tiêu đề không được để trống." };
-  }
-  if (normalizedTitle.length < MIN_TITLE_LENGTH) {
-    return { reason: "SHORT_TITLE", message: `Tiêu đề cần ít nhất ${MIN_TITLE_LENGTH} ký tự.` };
-  }
 
   if (!normalizedContent) {
     return { reason: "INVALID", message: "Nội dung không được để trống." };
@@ -32,7 +23,6 @@ export const createPost = async ({ userId, title, content, category }) => {
   if (!user) return { reason: "UNAUTHORIZED" };
 
   const post = await Post.create({
-    title: normalizedTitle,
     content: normalizedContent,
     category: normalizedCategory,
     author: user._id
@@ -41,7 +31,6 @@ export const createPost = async ({ userId, title, content, category }) => {
   return {
     post: {
       id: post._id,
-      title: post.title,
       content: post.content,
       category: post.category,
       createdAt: post.createdAt,
@@ -92,7 +81,6 @@ export const listPosts = async ({ category, page = 1, limit = 5, userId }) => {
 
   const items = posts.map((p) => ({
     id: p._id,
-    title: p.title,
     content: p.content,
     category: p.category,
     createdAt: p.createdAt,
@@ -133,17 +121,25 @@ export const likePost = async ({ userId, postId }) => {
   return { liked: true, likesCount: post.likesCount };
 };
 
-export const addComment = async ({ userId, postId, content }) => {
+export const addComment = async ({ userId, postId, content, parentId = null }) => {
   const text = (content || "").trim();
   if (!text) return { reason: "INVALID", message: "Nội dung không được để trống." };
   if (text.length < 2) return { reason: "SHORT", message: "Nội dung quá ngắn." };
-  
+
   const user = await User.findById(userId).select("name email avatar role");
   if (!user) return { reason: "UNAUTHORIZED" };
+
   const post = await Post.findById(postId);
   if (!post) return { reason: "NOT_FOUND" };
 
-  const comment = await Comment.create({ post: postId, author: userId, content: text });
+  //kiểm tra parent comment tồn tại
+  let parentComment = null;
+  if (parentId) {
+    parentComment = await Comment.findById(parentId);
+    if (!parentComment) return { reason: "PARENT_NOT_FOUND" };
+  }
+
+  const comment = await Comment.create({ post: postId, author: userId, content: text, parent: parentId || null });
   post.commentsCount = (post.commentsCount || 0) + 1;
   await post.save();
 
@@ -152,7 +148,7 @@ export const addComment = async ({ userId, postId, content }) => {
       id: comment._id,
       content: comment.content,
       createdAt: comment.createdAt,
-      parentId: comment.parent,
+      parentId: comment.parent || null,
       author: { id: user._id, name: user.name || user.email, avatar: user.avatar || "", role: user.role || "" }
     },
     commentsCount: post.commentsCount,
@@ -160,36 +156,50 @@ export const addComment = async ({ userId, postId, content }) => {
 };
 
 export const listComments = async ({ postId, page = 1, limit = 20 }) => {
-  const safePage = Math.max(1, parseInt(page, 10) || 1);
-  const safeLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
-  const skip = (safePage - 1) * safeLimit;
+  const skip = (page - 1) * limit;
 
-  const [items, total] = await Promise.all([
-    Comment.find({ post: postId, parent: null })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(safeLimit)
-      .populate({ path: "author", select: "name email avatar role" })
-      .lean(),
-    Comment.countDocuments({ post: postId })
-  ]);
+  //lấy comment cấp 1 (gốc)
+  const topLevel = await Comment.find({ post: postId, parent: null })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate("author", "name avatar")
+    .lean();
 
-  return {
-    items: items.map((c) => ({
-      id: c._id,
-      content: c.content,
-      createdAt: c.createdAt,
-      author: {
-        id: c.author?._id,
-        name: c.author?.name || c.author?.email || "Người dùng",
-        avatar: c.author?.avatar || "",
-        role: c.author?.role || ""
-      }
-    })),
-    total,
-    page: safePage,
-    limit: safeLimit
-  };
+  const total = await Comment.countDocuments({ post: postId, parent: null });
+
+  //lấy toàn bộ reply của những comment gốc
+  const replies = await Comment.find({
+    post: postId,
+    parent: { $in: topLevel.map((c) => c._id) }, //lấy tất cả reply thuộc về bất kỳ comment gốc nào trong list topLevel
+  })
+    .sort({ createdAt: -1 })
+    .populate("author", "name avatar")
+    .lean();
+
+  //gom reply theo parent
+  const repliesByParent = {};
+  replies.forEach((r) => {
+    const pid = r.parent.toString();
+    if (!repliesByParent[pid]) repliesByParent[pid] = [];
+    repliesByParent[pid].push({
+      id: String(r._id),
+      content: r.content,
+      createdAt: r.createdAt,
+      author: r.author,
+    });
+  });
+
+  //gắn reply vào comment cha
+  const items = topLevel.map((c) => ({
+    id: c._id,
+    content: c.content,
+    createdAt: c.createdAt,
+    author: c.author,
+    replies: repliesByParent[c._id.toString()] || [],
+  }));
+
+  return { items, total, page, limit };
 };
 
 export const getStats = async ({ userId }) => {

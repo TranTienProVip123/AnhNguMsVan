@@ -75,21 +75,3 @@
   border-radius: 10px;
   font-size: 14px;
 }
-
-.badge-pill-admin {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-
-.badge-pill-admin svg {
-  font-size: 13px;
-}
-

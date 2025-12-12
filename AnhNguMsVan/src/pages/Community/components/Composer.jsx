@@ -6,10 +6,8 @@ import "../styles/Composer.css";
 
 export const Composer = ({
   user,
-  draftContent,
-  draftTitle,
+  draftContent, 
   onChange,
-  onTitleChange,
   onSubmit,
   activeCategory,
   onCategoryChange,
@@ -21,7 +19,6 @@ export const Composer = ({
 
   const handleCategorySelect = (label) => {
     onCategoryChange?.(label);
-    setIsOpen(true);
   };
 
   if (!isOpen) {
@@ -56,14 +53,6 @@ export const Composer = ({
           </div>
 
           <div className="modal-subtitle">Đăng bài học tập, hỏi đáp hoặc chia sẻ kinh nghiệm của bạn.</div>
-
-          <input
-            className="composer-input title"
-            placeholder="Nhập tiêu đề..."
-            value={draftTitle}
-            onChange={(e) => onTitleChange(e.target.value)}
-            maxLength={100}
-          />
 
           <div className="composer-input-wrap modal-section">
             <textarea

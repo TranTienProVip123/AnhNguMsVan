@@ -4,7 +4,7 @@ import Footer from "../../components/Footer/Footer.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCommunity } from "./hooks/useCommunity.js";
 import { DEFAULT_CATEGORY } from "./utils/constants.js";
-import { TITLE_MIN_LENGTH, CONTENT_MIN_LENGTH } from "./utils/validation.js";
+import { CONTENT_MIN_LENGTH } from "./utils/validation.js";
 
 import "./styles/Common.css";
 import "./styles/CommunityLayout.css";
@@ -30,8 +30,8 @@ const CommunityPage = () => {
   } = useCommunity(token);
 
   const [draftContent, setDraftContent] = useState("");
-  const [draftTitle, setDraftTitle] = useState("");
   const [composerKey, setComposerKey] = useState(0);
+  const [composerCategory, setComposerCategory] = useState(DEFAULT_CATEGORY);
   const [isPosting, setIsPosting] = useState(false);
   const [toast, setToast] = useState("");
   const sentinelRef = useRef(null);
@@ -50,10 +50,26 @@ const CommunityPage = () => {
   };
 
   const showError = (msg) => {
-    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     setError(msg);
-    errorTimerRef.current = setTimeout(() => setError(""), 3000);
   };
+
+  useEffect(() => {
+    if (!error) {
+      clearTimeout(errorTimerRef.current);
+    }
+
+    if (errorTimerRef.current) {
+      clearTimeout(errorTimerRef.current);
+    }
+
+    errorTimerRef.current = setTimeout(() => {
+      setError("");
+    }, 3000);
+
+    return () => {
+      clearTimeout(errorTimerRef.current);
+    };
+  }, [error, setError]);
 
   useEffect(() => {
     return () => {
@@ -68,17 +84,8 @@ const CommunityPage = () => {
       return;
     }
     if (isPosting) return;
-    const normalizedTitle = draftTitle.replace(/\s+/g, " ").trim();
     const normalizedContent = draftContent.replace(/\s+/g, " ").trim();
 
-    if (!normalizedTitle) {
-      showError("Tiêu đề không được để trống.");
-      return;
-    }
-    if (normalizedTitle.length < TITLE_MIN_LENGTH) {
-      showError(`Tiêu đề cần ít nhất ${TITLE_MIN_LENGTH} ký tự.`);
-      return;
-    }
     if (!normalizedContent) {
       showError("Nội dung không được để trống.");
       return;
@@ -91,16 +98,15 @@ const CommunityPage = () => {
     setIsPosting(true);
     try {
       const created = await createPost({
-        title: normalizedTitle,
         content: normalizedContent,
-        category: activeCategory || DEFAULT_CATEGORY
+        category: composerCategory || DEFAULT_CATEGORY
       });
 
       if (created) {
-        setDraftTitle("");
         setDraftContent("");
         setComposerKey((k) => k + 1); // remount composer -> close
         showToast("Đã đăng bài.");
+        setActiveCategory(composerCategory);
       }
     } catch (err) {
       showError("Đăng bài thất bại,hãy đăng nhập để đăng bài.");
@@ -144,13 +150,11 @@ const CommunityPage = () => {
             key={composerKey}
             user={user}
             draftContent={draftContent}
-            draftTitle={draftTitle}
             onChange={setDraftContent}
             CONTENT_MIN_LENGTH={CONTENT_MIN_LENGTH}
-            onTitleChange={setDraftTitle}
             onSubmit={handleSubmit}
-            onCategoryChange={setActiveCategory}
-            activeCategory={activeCategory}
+            onCategoryChange={setComposerCategory}
+            activeCategory={composerCategory}
             error={error}
             isPosting={isPosting}
           />
