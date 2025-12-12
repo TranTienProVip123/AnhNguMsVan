@@ -27,7 +27,7 @@ export const createTopicController = async (req, res, next) => {
     if (!errors.isEmpty()) return res.status(400).json({ success: false, message: 'Dữ liệu không hợp lệ', errors: errors.array() });
     try {
         const result = await createTopic(req.body);
-        if (result.reason === 'DUPLICATE') return res.status(400).json({ success: false, message: 'Chủ đề này đã tồn tại' });
+        // if (result.reason === 'DUPLICATE') return res.status(400).json({ success: false, message: 'Chủ đề này đã tồn tại' });
         return res.status(201).json({ success: true, message: 'Tạo chủ đề thành công', data: result.topic });
     } catch (err) { next(err); }
 };

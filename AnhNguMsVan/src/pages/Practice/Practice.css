@@ -294,6 +294,10 @@
   min-height: 20px;
 }
 
+.course-desc{
+  color:rgb(66, 65, 65);
+}
+
 .course-stats {
   display: flex;
   gap: 20px;

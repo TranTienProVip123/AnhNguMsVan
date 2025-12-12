@@ -55,7 +55,6 @@ const markWordAsCompleted = (topicProgress, wordId, isCorrectFirstTime = false) 
     // Đã học rồi, tăng attempts
     existingWord.attempts += 1;
     existingWord.completedAt = new Date();
-    // console.log('📚 Word already learned, increment attempts:', wordIdStr);
   } else {
     // Chưa học, thêm mới
     topicProgress.completedWords.push({
@@ -64,16 +63,26 @@ const markWordAsCompleted = (topicProgress, wordId, isCorrectFirstTime = false) 
       attempts: 1,
       completedAt: new Date()
     });
-    // console.log('✨ New word learned:', wordIdStr);
   }
 };
 
 // Tính completion rate của topic
 const calculateTopicCompletionRate = (topicProgress) => {
-  if (!topicProgress || topicProgress.totalWordsInTopic === 0) return 0;
+  if (
+    !topicProgress ||
+    !topicProgress.totalWordsInTopic ||
+    topicProgress.totalWordsInTopic === 0
+  ) {
+    return 0;
+  }
 
-  const learned = topicProgress.completedWords.length;
-  return Math.round((learned / topicProgress.totalWordsInTopic) * 100);
+  const learned = topicProgress.completedWords?.length || 0;
+  const total = topicProgress.totalWordsInTopic;
+
+  const percent = Math.round((learned / total) * 100);
+
+  // Giới hạn từ 0 đến 100%
+  return Math.min(Math.max(percent, 0), 100);
 };
 
 // Tính status của topic
@@ -84,7 +93,7 @@ const getTopicStatus = (topicProgress) => {
 
   const completionRate = calculateTopicCompletionRate(topicProgress);
   
-  if (completionRate === 100) return 'completed';
+  if (completionRate >= 100) return 'completed';
   if (completionRate > 0) return 'in_progress';
   return 'not_started';
 };
@@ -156,7 +165,6 @@ const getCourseStatus = (completionRate) => {
 // ============ PUBLIC API FUNCTIONS ============
 
 // Update progress khi học xong 1 từ
-// Update progress khi học xong 1 từ
 export const updateWordProgress = async (userId, courseId, topicId, wordId, isCorrect) => {
   try {
    
@@ -192,13 +200,13 @@ export const updateWordProgress = async (userId, courseId, topicId, wordId, isCo
       console.log('  Current learned:', topicProgress.completedWords.length);
       console.log('  Completed words:', topicProgress.completedWords.map(w => w.wordId.toString()));
     }
+        
+    const isAlreadyCompleted = topicProgress.completedWords.length >= topicProgress.totalWordsInTopic;
 
     // BEFORE mark
     const beforeCount = topicProgress.completedWords.length;
-
     // Mark word completed
     markWordAsCompleted(topicProgress, wordId, isCorrect);
-
     // AFTER mark
     const afterCount = topicProgress.completedWords.length;
 
@@ -212,7 +220,7 @@ export const updateWordProgress = async (userId, courseId, topicId, wordId, isCo
     userProgress.markModified('topics');
 
     // Save to DB
-    const saveResult = await userProgress.save();
+    await userProgress.save();
 
     // ✅ FIX 3: Verify by fetching lại
     const verified = await UserProgress.findById(userProgress._id);
@@ -228,7 +236,9 @@ export const updateWordProgress = async (userId, courseId, topicId, wordId, isCo
         totalWordsLearned: topicProgress.completedWords.length,
         totalWordsInTopic: topicProgress.totalWordsInTopic,
         completionRate,
-        status
+        status,
+        isCompleted: completionRate >= 100,
+        isAlreadyCompleted
       }
     };
 
@@ -252,7 +262,8 @@ export const getTopicProgress = async (userId, courseId, topicId) => {
         totalWordsLearned: 0,
         totalWordsInTopic: 0,
         completionRate: 0,
-        status: 'not_started'
+        status: 'not_started',
+        isCompleted: false
       };
     }
 
@@ -263,15 +274,19 @@ export const getTopicProgress = async (userId, courseId, topicId) => {
         totalWordsLearned: 0,
         totalWordsInTopic: 0,
         completionRate: 0,
-        status: 'not_started'
+        status: 'not_started',
+        isCompleted: false
       };
     }
+
+    const completionRate = calculateTopicCompletionRate(topicProgress);
 
     return {
       totalWordsLearned: topicProgress.completedWords.length,
       totalWordsInTopic: topicProgress.totalWordsInTopic,
-      completionRate: calculateTopicCompletionRate(topicProgress),
-      status: getTopicStatus(topicProgress)
+      completionRate,
+      status: getTopicStatus(topicProgress),
+      isCompleted: completionRate >= 100,
     };
 
   } catch (error) {

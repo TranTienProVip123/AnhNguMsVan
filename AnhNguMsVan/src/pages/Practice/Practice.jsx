@@ -59,24 +59,27 @@ const Practice = () => {
   };
 
   // Khi user click vào khóa học + điều hướng + 1 learner
-  const handleCourseClick = async (id) => {
+  const handleCourseClick = async (course) => {
+    const id = course._id;
     // 1. Optimistic update - Tăng count ngay trên UI
     setCourses((prevCourses) =>
-      prevCourses.map((course) =>
-        course._id === id
+      prevCourses.map((c) =>
+        c._id === id
           ? {
-              ...course,
+              ...c,
               stats: {
-                ...course.stats,
-                learnerCount: (course.stats?.learnerCount || 0) + 1,
+                ...c.stats,
+                learnerCount: (c.stats?.learnerCount || 0) + 1,
               },
             }
-          : course
+          : c
       )
     );
 
     // 2. Navigate ngay (không đợi API)
-    navigate(`/vocabulary?courseId=${id}`);
+    navigate(`/vocabulary?courseId=${id}`,{
+      state: { title: course.title },
+    });
 
     // 3. Background: Track vào server
     try {
@@ -162,7 +165,7 @@ const Practice = () => {
               </div>
               <div className="course-content">
                 <h3 className="course-title">{course.title}</h3>
-                <p className="course-desc">{course.description}</p>
+                <p className="course-desc">đã học {course.stats?.learnerCount ?? 0} từ</p>
                 <div className="course-stats">
                   <span className="stat-item">
                     👥 {course.stats?.learnerCount ?? 0} học viên
@@ -173,7 +176,7 @@ const Practice = () => {
                 </div>
                 <button
                   className="start-btn"
-                  onClick={() => handleCourseClick(course._id)}
+                  onClick={() => handleCourseClick(course)}
                 >
                   Bắt đầu học
                 </button>
@@ -278,7 +281,7 @@ const Practice = () => {
           </div>
         )}
 
-        {renderSection("Từ vựng", "vocabulary")}
+        {renderSection("1000 từ vựng thông dụng", "vocabulary")}
         {renderSection("TOEIC", "toeic")}
         {renderSection("IELTS", "ielts")}
       </div>

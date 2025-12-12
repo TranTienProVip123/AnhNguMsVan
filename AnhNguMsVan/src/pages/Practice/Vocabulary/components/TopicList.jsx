@@ -7,14 +7,15 @@ const TopicList = memo(({
   isAdmin, 
   openMenuId,
   topicsProgress,
+  completedTopics, // ✅ Nhận Set của topicIds
   onTopicClick,
   onToggleMenu,
   onAddWord,
   onEditTopic,
   onDeleteTopic,
-  onAddTopicClick
+  onAddTopicClick,
+  onResetTopic
 }) => {
-  
   return (
     <div className="topics-panel">
       <div className="topics-panel-header">
@@ -31,21 +32,29 @@ const TopicList = memo(({
       </div>
 
       <div className="topics-scroll">
-        {topics.map((topic, index) => (
-          <TopicItem
-            key={topic.id}
-            topic={topic}
-            progress={topicsProgress?.[topic.id?.toString()]}
-            isActive={index === currentTopicIndex}
-            isAdmin={isAdmin}
-            openMenuId={openMenuId}
-            onTopicClick={() => onTopicClick(index)}
-            onToggleMenu={onToggleMenu}
-            onAddWord={onAddWord}
-            onEditTopic={onEditTopic}
-            onDeleteTopic={onDeleteTopic}
-          />
-        ))}
+        {topics.map((topic, index) => {
+          // ✅ FIXED: Check isCompleted CHO TỪNG topic
+          const topicId = (topic.id || topic._id).toString();
+          const isCompleted = completedTopics.has(topicId);
+
+          return (
+            <TopicItem
+              key={topicId}
+              topic={topic}
+              progress={topicsProgress?.[topicId]}
+              isActive={index === currentTopicIndex}
+              isCompleted={isCompleted} // ✅ Pass đúng giá trị cho từng topic
+              isAdmin={isAdmin}
+              openMenuId={openMenuId}
+              onTopicClick={() => onTopicClick(index)}
+              onToggleMenu={onToggleMenu}
+              onAddWord={onAddWord}
+              onEditTopic={onEditTopic}
+              onDeleteTopic={onDeleteTopic}
+              onResetTopic={onResetTopic}
+            />
+          );
+        })}
       </div>
     </div>
   );

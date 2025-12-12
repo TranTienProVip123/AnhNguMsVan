@@ -1,278 +1,57 @@
-import React, { useState, useCallback, useEffect, lazy, Suspense } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
+import React, { lazy, Suspense } from "react";
 import Header from "../../../components/Header/Header.jsx";
-import PracticeCard from "./components/PracticeCard.jsx";
+import PracticeCard from "./components/PracticeCard/index.jsx";
 import TopicList from "./components/TopicList.jsx";
-import {
-  LoadingState,
-  LoadingTopicDetail,
-  NoTopicsState,
-} from "./components/LoadingStates.jsx";
-import { useTopics } from "./hooks/useTopics.js";
-import { useWordNavigation } from "./hooks/useWordNavigation.js";
+import {LoadingState, LoadingTopicDetail, NoTopicsState} from "./components/LoadingStates.jsx";
+import { useVocabularyLogic } from "./VocabularyLogic.js";
+import { useVocabularyHandlers } from "./VocabularyHandlers.js";
 import "./Vocabulary.css";
 
-// Lazy load modals - chỉ load khi cần
+// Lazy load modals
 const AddTopicModal = lazy(() => import("./components/modals/AddTopicModal.jsx"));
 const EditTopicModal = lazy(() => import("./components/modals/EditTopicModal.jsx"));
 const AddWordModal = lazy(() => import("./components/modals/AddWordModal.jsx"));
 const EditWordModal = lazy(() => import("./components/modals/EditWordModal.jsx"));
 
 const Vocabulary = () => {
-  const { user, token } = useAuth();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
+  // ==================== LOGIC HOOK ====================
+  const logic = useVocabularyLogic();
 
-  const courseId = queryParams.get('courseId');
-  const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
-  // state - component cha quản lý
-  const [topicsProgress, setTopicsProgress] = useState({});
+  // ==================== HANDLERS HOOK ====================
+  const handlers = useVocabularyHandlers({
+    topics: logic.topics,
+    selectedTopic: logic.selectedTopic,
+    currentTopicIndex: logic.currentTopicIndex,
+    currentWordIndex: logic.currentWordIndex,
+    completedTopics: logic.completedTopics,
+    topicWordPositions: logic.topicWordPositions,
+    setCurrentTopicIndex: logic.setCurrentTopicIndex,
+    setCurrentWordIndex: logic.setCurrentWordIndex,
+    setTopicWordPositions: logic.setTopicWordPositions,
+    setCompletedTopics: logic.setCompletedTopics,
+    setOpenMenuId: logic.setOpenMenuId,
+    setSelectedTopicForWord: logic.setSelectedTopicForWord,
+    setIsAddWordModalOpen: logic.setIsAddWordModalOpen,
+    setEditingTopic: logic.setEditingTopic,
+    setIsEditTopicModalOpen: logic.setIsEditTopicModalOpen,
+    setEditingWord: logic.setEditingWord,
+    setIsEditWordModalOpen: logic.setIsEditWordModalOpen,
+    fetchTopicDetail: logic.fetchTopicDetail,
+    resetWordState: logic.resetWordState,
+    handleNextWord: logic.handleNextWord,
+    deleteTopic: logic.deleteTopic,
+    deleteWord: logic.deleteWord,
+  });
 
-  // Modals state
-  const [isAddTopicModalOpen, setIsAddTopicModalOpen] = useState(false);
-  const [isEditTopicModalOpen, setIsEditTopicModalOpen] = useState(false);
-  const [isAddWordModalOpen, setIsAddWordModalOpen] = useState(false);
-  const [isEditWordModalOpen, setIsEditWordModalOpen] = useState(false);
-  const [editingTopic, setEditingTopic] = useState(null);
-  const [selectedTopicForWord, setSelectedTopicForWord] = useState(null);
-  const [editingWord, setEditingWord] = useState(null);
-
-  const isAdmin = user?.role === "admin";
-
-  // Custom hooks
-  const {
-    topics,
-    selectedTopic,
-    isLoading,
-    error,
-    fetchTopicDetail,
-    addTopic,
-    updateTopic,
-    deleteTopic,
-    addWordToTopic,
-    updateWord,
-    deleteWord,
-  } = useTopics(token, courseId);
-
-  const {
-    currentWordIndex,
-    userAnswer,
-    showAnswer,
-    isCorrect,
-    setUserAnswer,
-    handleCheckAnswer,
-    handleDontKnow,
-    handleNextWord,
-    resetWordState,
-    setCurrentWordIndex,
-  } = useWordNavigation(selectedTopic, currentTopicIndex, topics);
-
-  // Auto load topic đầu tiên khi có topics
-  useEffect(() => {
-    if (topics.length > 0 && !selectedTopic) {
-      fetchTopicDetail(topics[0].id);
-    }
-  }, [topics, selectedTopic, fetchTopicDetail]);
-
-  // Đóng menu khi click ra ngoài
-  useEffect(() => {
-    const handleClickOutside = () => {
-      if (openMenuId) {
-        setOpenMenuId(null);
-      }
-    };
-
-    if (openMenuId) {
-      document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
-    }
-  }, [openMenuId]);
-
-  // Topic handlers
-  // Vocabulary.jsx - Thêm console.log để debug
-  const handleTopicClick = useCallback(
-    (topicIndex) => {
-      const topic = topics[topicIndex];
-      
-      console.log('📌 Topic clicked:', {
-        index: topicIndex,
-        topic: topic,
-        topicId: topic.id || topic._id,
-        courseId: courseId
-      });
-
-      setCurrentTopicIndex(topicIndex);
-      resetWordState();
-      fetchTopicDetail(topic.id);
-    },
-    [topics, resetWordState, fetchTopicDetail, courseId]
-  );
-
-  const toggleMenu = useCallback((e, topicId) => {
-    e.stopPropagation();
-    setOpenMenuId((prev) => (prev === topicId ? null : topicId));
-  }, []);
-
-  const openAddWordModal = useCallback((e, topic) => {
-    e.stopPropagation();
-    setOpenMenuId(null);
-    setSelectedTopicForWord(topic);
-    setIsAddWordModalOpen(true);
-  }, []);
-
-  const openEditTopicModal = useCallback((e, topic) => {
-    e.stopPropagation();
-    setOpenMenuId(null);
-    setEditingTopic(topic);
-    setIsEditTopicModalOpen(true);
-  }, []);
-
-  const handleDeleteFromMenu = useCallback(
-    async (e, topicId) => {
-      e.stopPropagation();
-      setOpenMenuId(null);
-
-      if (!window.confirm("Bạn có chắc muốn xóa chủ đề này?")) return;
-
-      const result = await deleteTopic(topicId);
-      if (result.success) {
-        alert("Xóa chủ đề thành công!");
-        // Điều chỉnh currentTopicIndex nếu cần
-        if (currentTopicIndex >= topics.length - 1) {
-          setCurrentTopicIndex(Math.max(0, topics.length - 2));
-        }
-      } else {
-        alert(result.message || "Có lỗi xảy ra");
-      }
-    },
-    [deleteTopic, currentTopicIndex, topics.length]
-  );
-
-  // handler cho edit word
-  const handleEditWord = useCallback((word) => {
-    setEditingWord(word);
-    setIsEditWordModalOpen(true);
-  }, []);
-
-  // ← Thêm handler cho delete word
-  const handleDeleteWord = useCallback(
-    async (word) => {
-      if (!selectedTopic?.id || !word._id) {
-        alert("Lỗi: Không xác định được từ vựng cần xóa");
-        return;
-      }
-
-      const result = await deleteWord(selectedTopic.id, word._id);
-
-      if (result.success) {
-        alert("Xóa từ vựng thành công!");
-
-        // Điều chỉnh currentWordIndex nếu cần
-        const totalWords = selectedTopic.words.length;
-        if (totalWords === 1) {
-          // Nếu xóa từ cuối cùng, quay lại danh sách topic
-          alert("Đã xóa hết từ vựng trong chủ đề này");
-          resetWordState();
-        } else if (currentWordIndex >= totalWords - 1) {
-          // Nếu đang ở từ cuối, quay về từ trước đó
-          setCurrentWordIndex(Math.max(0, totalWords - 2));
-        }
-        // Nếu không phải từ cuối, giữ nguyên index (sẽ hiển thị từ tiếp theo)
-      } else {
-        alert(result.message || "Có lỗi xảy ra khi xóa từ vựng");
-      }
-    },
-    [
-      selectedTopic,
-      deleteWord,
-      currentWordIndex,
-      resetWordState,
-      setCurrentWordIndex,
-    ]
-  );
-
-  const handleNext = useCallback(() => {
-    const result = handleNextWord();
-
-    if (result.nextTopic) {
-      setCurrentTopicIndex(result.nextTopicIndex);
-      resetWordState();
-      fetchTopicDetail(topics[result.nextTopicIndex].id);
-    } else if (result.completed) {
-      alert("🎉 Chúc mừng! Bạn đã hoàn thành tất cả các từ!");
-    }
-  }, [handleNextWord, resetWordState, fetchTopicDetail, topics]);
-
-  // Fetch course progress khi component mount
-  useEffect(() => {
-    const fetchCourseProgress = async () => {
-      if (!user || !token || !courseId) return;
-
-      try {
-        // console.log('📊 Fetching course progress...');
-        const response = await fetch(
-          `${API_BASE_URL}/api/progress/course/${courseId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-
-        const data = await response.json();
-        // console.log('📊 Course progress response:', data);
-
-        if (data.success && data.data.topics) {
-          // Convert array to map: topicId -> progress
-          const progressMap = {};
-          data.data.topics.forEach(tp => {
-            progressMap[tp.topicId.toString()] = {
-              totalWordsLearned: tp.totalWordsLearned,
-              totalWordsInTopic: tp.totalWordsInTopic,
-              completionRate: tp.completionRate,
-              status: tp.status
-            };
-          });
-          
-          // console.log('📊 Progress map:', progressMap);
-          setTopicsProgress(progressMap);
-        }
-      } catch (error) {
-        console.error('❌ Fetch course progress failed:', error);
-      }
-    };
-
-    fetchCourseProgress();
-  }, [user, token, courseId, API_BASE_URL]);
-
-  // ✅ CALLBACK để update progress từ PracticeCard
-  const handleProgressUpdate = useCallback((topicId, newProgress) => {
-    
-    setTopicsProgress(prev => {
-      const updated = {
-        ...prev,
-        [topicId.toString()]: {
-          totalWordsLearned: newProgress.totalWordsLearned,
-          totalWordsInTopic: newProgress.totalWordsInTopic,
-          completionRate: newProgress.completionRate,
-          status: newProgress.status
-        }
-      };
-      
-      return updated;
-    });
-  }, []);
-  // Handle error state
-  if (error) {
+  // ==================== RENDER - ERROR STATE ====================
+  
+  if (logic.error) {
     return (
       <>
         <Header />
         <div className="vocabulary-page">
           <div className="error-container">
-            <p className="error-message">❌ {error}</p>
+            <p className="error-message">❌ {logic.error}</p>
             <button
               className="btn-retry"
               onClick={() => window.location.reload()}
@@ -285,28 +64,30 @@ const Vocabulary = () => {
     );
   }
 
-  // Loading state
-  if (isLoading) {
+  // ==================== RENDER - LOADING STATE ====================
+  
+  if (logic.isLoading) {
     return <LoadingState />;
   }
 
-  // No topics
-  if (!topics.length) {
+  // ==================== RENDER - NO TOPICS ====================
+  
+  if (!logic.topics.length) {
     return (
       <>
         <Header />
         <div className="vocabulary-page">
           <NoTopicsState 
-            isAdmin={isAdmin}
-            onAddTopicClick={() => setIsAddTopicModalOpen(true)}
+            isAdmin={logic.isAdmin}
+            onAddTopicClick={() => logic.setIsAddTopicModalOpen(true)}
           />
         </div>
         <Suspense fallback={null}>
-          {isAddTopicModalOpen && (
+          {logic.isAddTopicModalOpen && (
             <AddTopicModal
-              isOpen={isAddTopicModalOpen}
-              onClose={() => setIsAddTopicModalOpen(false)}
-              onSubmit={addTopic}
+              isOpen={logic.isAddTopicModalOpen}
+              onClose={() => logic.setIsAddTopicModalOpen(false)}
+              onSubmit={logic.addTopic}
             />
           )}
         </Suspense>
@@ -314,26 +95,143 @@ const Vocabulary = () => {
     );
   }
 
-  // Loading topic detail
-  if (!selectedTopic) {
+  // ==================== RENDER - LOADING TOPIC DETAIL ====================
+  
+  if (!logic.selectedTopic) {
     return <LoadingTopicDetail />;
   }
 
-  const currentWord = selectedTopic.words[currentWordIndex];
-  const totalWordsInTopic = selectedTopic.words.length;
+  // ✅ ADDED: Check if selectedTopic has words
+  if (!logic.selectedTopic.words || !logic.selectedTopic.words.length) {
+    return (
+      <>
+        <Header />
+        <div className="vocabulary-page">
+          <div className="vocabulary-header">
+            <h1>{logic.decodedTitle}</h1>
+          </div>
+
+          <div className="vocabulary-container">
+            <div className="practice-panel">
+              <div className="practice-header">
+                <h2 className="topic-name">Chủ đề: {logic.selectedTopic.name}</h2>
+              </div>
+              
+              <div className="no-words-container">
+                <p className="no-words-message">
+                  📚 Chủ đề này chưa có từ vựng nào
+                </p>
+                {logic.isAdmin && (
+                  <button
+                    className="btn-add-word"
+                    onClick={() => {
+                      logic.setSelectedTopicForWord(logic.selectedTopic);
+                      logic.setIsAddWordModalOpen(true);
+                    }}
+                  >
+                    ➕ Thêm từ vựng
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Topics Panel */}
+            <TopicList
+              topics={logic.topics}
+              currentTopicIndex={logic.currentTopicIndex}
+              isAdmin={logic.isAdmin}
+              openMenuId={logic.openMenuId}
+              topicsProgress={logic.topicsProgress}
+              completedTopics={logic.completedTopics}
+              onTopicClick={handlers.handleTopicClick}
+              onToggleMenu={handlers.toggleMenu}
+              onAddWord={handlers.openAddWordModal}
+              onEditTopic={handlers.openEditTopicModal}
+              onDeleteTopic={handlers.handleDeleteFromMenu}
+              onAddTopicClick={() => logic.setIsAddTopicModalOpen(true)}
+              onResetTopic={handlers.handleResetTopicProgress}
+            />
+          </div>
+
+          {/* Modals */}
+          <Suspense fallback={null}>
+            {logic.isAddTopicModalOpen && (
+              <AddTopicModal
+                isOpen={logic.isAddTopicModalOpen}
+                onClose={() => logic.setIsAddTopicModalOpen(false)}
+                onSubmit={logic.addTopic}
+              />
+            )}
+
+            {logic.isAddWordModalOpen && logic.selectedTopicForWord && (
+              <AddWordModal
+                isOpen={logic.isAddWordModalOpen}
+                topic={logic.selectedTopicForWord}
+                onClose={() => {
+                  logic.setIsAddWordModalOpen(false);
+                  logic.setSelectedTopicForWord(null);
+                }}
+                onSubmit={logic.addWordToTopic}
+              />
+            )}
+          </Suspense>
+        </div>
+      </>
+    );
+  }
+
+  // ✅ ADDED: Safety check for currentWord
+  const currentWord = logic.selectedTopic.words[logic.currentWordIndex];
+  
+  if (!currentWord) {
+    console.error('❌ Current word is undefined:', {
+      currentWordIndex: logic.currentWordIndex,
+      totalWords: logic.selectedTopic.words.length,
+      topicId: logic.selectedTopic.id || logic.selectedTopic._id
+    });
+    
+    return (
+      <>
+        <Header />
+        <div className="vocabulary-page">
+          <div className="error-container">
+            <p className="error-message">
+              ❌ Không tìm thấy từ vựng (Index: {logic.currentWordIndex})
+            </p>
+            <button
+              className="btn-retry"
+              onClick={() => {
+                logic.setCurrentWordIndex(0);
+                window.location.reload();
+              }}
+            >
+              🔄 Reset về đầu
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ==================== RENDER - MAIN CONTENT ====================
+  
+  const totalWordsInTopic = logic.selectedTopic.words.length;
 
   return (
     <>
       <Header />
       <div className="vocabulary-page">
-        <h1>1000 từ tiếng Anh thông dụng</h1>
+        <div className="vocabulary-header">
+          <h1>{logic.decodedTitle}</h1>
+        </div>
+
         <div className="vocabulary-container">
           {/* Practice Panel */}
           <div className="practice-panel">
             <div className="practice-header">
-              <h2 className="topic-name">Chủ đề: {selectedTopic.name}</h2>
+              <h2 className="topic-name">Chủ đề: {logic.selectedTopic.name}</h2>
               <div className="word-counter">
-                câu {currentWordIndex + 1}/{totalWordsInTopic}
+                câu {logic.currentWordIndex + 1}/{totalWordsInTopic}
               </div>
             </div>
 
@@ -341,95 +239,96 @@ const Vocabulary = () => {
               <div
                 className="progress-bar-fill"
                 style={{
-                  width: `${
-                    ((currentWordIndex + 1) / totalWordsInTopic) * 100
-                  }%`,
+                  width: `${((logic.currentWordIndex + 1) / totalWordsInTopic) * 100}%`,
                 }}
               />
             </div>
 
             <PracticeCard
+              key={currentWord._id || currentWord.id}
               word={currentWord}
-              courseId={courseId}
-              topicId={selectedTopic?.id || selectedTopic?._id}
-              wordIndex={currentWordIndex}
+              courseId={logic.courseId}
+              topicId={logic.selectedTopic?.id || logic.selectedTopic?._id}
+              wordIndex={logic.currentWordIndex}
               totalWords={totalWordsInTopic}
-              userAnswer={userAnswer}
-              setUserAnswer={setUserAnswer}
-              showAnswer={showAnswer}
-              isCorrect={isCorrect}
+              userAnswer={logic.userAnswer}
+              setUserAnswer={logic.setUserAnswer}
+              showAnswer={logic.showAnswer}
+              isCorrect={logic.isCorrect}
               correctAnswer={currentWord}
-              onCheckAnswer={handleCheckAnswer}
-              onDontKnow={handleDontKnow}
-              onNext={handleNext}
-              onProgressUpdate={handleProgressUpdate} // ← Truyền callback
-              progress={topicsProgress[selectedTopic.id?.toString()]}
-              isAdmin={isAdmin}
-              onEditWord={handleEditWord}
-              onDeleteWord={handleDeleteWord}
+              onCheckAnswer={logic.handleCheckAnswer}
+              onDontKnow={logic.handleDontKnow}
+              onNext={handlers.handleNext}
+              onProgressUpdate={logic.handleProgressUpdate}
+              progress={logic.topicsProgress[logic.selectedTopic.id?.toString()]}
+              isAdmin={logic.isAdmin}
+              onEditWord={handlers.handleEditWord}
+              onDeleteWord={handlers.handleDeleteWord}
             />
           </div>
 
-          {/* Topics Panel - Sử dụng TopicList component */}
+          {/* Topics Panel */}
           <TopicList
-            topics={topics}
-            currentTopicIndex={currentTopicIndex}
-            isAdmin={isAdmin}
-            openMenuId={openMenuId}
-            topicsProgress={topicsProgress}  // <- truyền state xuống
-            onTopicClick={handleTopicClick}
-            onToggleMenu={toggleMenu}
-            onAddWord={openAddWordModal}
-            onEditTopic={openEditTopicModal}
-            onDeleteTopic={handleDeleteFromMenu}
-            onAddTopicClick={() => setIsAddTopicModalOpen(true)}
+            topics={logic.topics}
+            currentTopicIndex={logic.currentTopicIndex}
+            isAdmin={logic.isAdmin}
+            openMenuId={logic.openMenuId}
+            topicsProgress={logic.topicsProgress}
+            completedTopics={logic.completedTopics}
+            onTopicClick={handlers.handleTopicClick}
+            onToggleMenu={handlers.toggleMenu}
+            onAddWord={handlers.openAddWordModal}
+            onEditTopic={handlers.openEditTopicModal}
+            onDeleteTopic={handlers.handleDeleteFromMenu}
+            onAddTopicClick={() => logic.setIsAddTopicModalOpen(true)}
+            onResetTopic={handlers.handleResetTopicProgress}
           />
         </div>
 
-        {/* Lazy loaded modals */}
+        {/* Modals */}
         <Suspense fallback={null}>
-          {isAddTopicModalOpen && (
+          {logic.isAddTopicModalOpen && (
             <AddTopicModal
-              isOpen={isAddTopicModalOpen}
-              onClose={() => setIsAddTopicModalOpen(false)}
-              onSubmit={addTopic}
+              isOpen={logic.isAddTopicModalOpen}
+              onClose={() => logic.setIsAddTopicModalOpen(false)}
+              onSubmit={logic.addTopic}
             />
           )}
 
-          {isEditTopicModalOpen && editingTopic && (
+          {logic.isEditTopicModalOpen && logic.editingTopic && (
             <EditTopicModal
-              isOpen={isEditTopicModalOpen}
-              topic={editingTopic}
+              isOpen={logic.isEditTopicModalOpen}
+              topic={logic.editingTopic}
               onClose={() => {
-                setIsEditTopicModalOpen(false);
-                setEditingTopic(null);
+                logic.setIsEditTopicModalOpen(false);
+                logic.setEditingTopic(null);
               }}
-              onSubmit={updateTopic}
+              onSubmit={logic.updateTopic}
             />
           )}
 
-          {isAddWordModalOpen && selectedTopicForWord && (
+          {logic.isAddWordModalOpen && logic.selectedTopicForWord && (
             <AddWordModal
-              isOpen={isAddWordModalOpen}
-              topic={selectedTopicForWord}
+              isOpen={logic.isAddWordModalOpen}
+              topic={logic.selectedTopicForWord}
               onClose={() => {
-                setIsAddWordModalOpen(false);
-                setSelectedTopicForWord(null);
+                logic.setIsAddWordModalOpen(false);
+                logic.setSelectedTopicForWord(null);
               }}
-              onSubmit={addWordToTopic}
+              onSubmit={logic.addWordToTopic}
             />
           )}
 
-          {isEditWordModalOpen && editingWord && (
+          {logic.isEditWordModalOpen && logic.editingWord && (
             <EditWordModal
-              isOpen={isEditWordModalOpen}
-              word={editingWord}
-              topicId={selectedTopic.id}
+              isOpen={logic.isEditWordModalOpen}
+              word={logic.editingWord}
+              topicId={logic.selectedTopic.id}
               onClose={() => {
-                setIsEditWordModalOpen(false);
-                setEditingWord(null);
+                logic.setIsEditWordModalOpen(false);
+                logic.setEditingWord(null);
               }}
-              onSubmit={updateWord}
+              onSubmit={logic.updateWord}
             />
           )}
         </Suspense>

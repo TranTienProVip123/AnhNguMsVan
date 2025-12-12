@@ -1,8 +1,9 @@
 import Topic from '../models/Topic.js';
 
-export const listTopics = async ({ category }) => {
+export const listTopics = async ({ category, courseId }) => {
   const filter = { isActive: true };
   if (category) filter.category = category;
+  if (courseId) filter.courseId = courseId;
   const topics = await Topic.find(filter)
     .select('name image description category totalWords')
     .sort({ createdAt: -1 })
@@ -28,6 +29,7 @@ export const getTopicDetail = async (id) => {
   return {
     topic: {
       id: topic._id,
+      courseId: topic.courseId,
       name: topic.name,
       image: topic.image,
       description: topic.description,
@@ -41,18 +43,51 @@ export const getTopicDetail = async (id) => {
 };
 
 export const createTopic = async (payload) => {
-  if (await Topic.findOne({ name: payload.name })) return { reason: 'DUPLICATE' };
-  const topic = await Topic.create({
-    name: payload.name,
-    image: payload.image,
-    description: payload.description,
-    category: payload.category || 'vocabulary',
-    words: [],
-    totalWords: 0
+  const { courseId, name, image, description, category } = payload;
+
+  // ✅ Validate required fields
+  if (!courseId) {
+    return { reason: 'COURSE_ID_REQUIRED' };
+  }
+
+  if (!name || !name.trim()) {
+    return { reason: 'NAME_REQUIRED' };
+  }
+
+  if (!image) {
+    return { reason: 'IMAGE_REQUIRED' };
+  }
+
+  // ✅ Check duplicate name trong cùng course
+  const existingTopic = await Topic.findOne({ 
+    courseId, 
+    name: name.trim(),
+    isActive: true 
   });
+
+  if (existingTopic) {
+    return { 
+      reason: 'DUPLICATE',
+      message: `Chủ đề "${name}" đã tồn tại trong khóa học này`
+    };
+  }
+
+  // ✅ Create topic
+  const topic = await Topic.create({
+    courseId,
+    name: name.trim(),
+    image,
+    description: description || '',
+    category: category || 'vocabulary',
+    words: [],
+    totalWords: 0,
+    isActive: true
+  });
+
   return {
     topic: {
       id: topic._id,
+      courseId: topic.courseId,
       name: topic.name,
       image: topic.image,
       description: topic.description,
@@ -67,20 +102,51 @@ export const createTopic = async (payload) => {
 export const updateTopic = async (id, payload) => {
   const topic = await Topic.findById(id);
   if (!topic) return { reason: 'NOT_FOUND' };
-  if (payload.name) topic.name = payload.name;
+
+  // ✅ Nếu đổi tên, check duplicate
+  if (payload.name && payload.name.trim() !== topic.name) {
+    const existingTopic = await Topic.findOne({
+      courseId: topic.courseId,
+      name: payload.name.trim(),
+      isActive: true,
+      _id: { $ne: id } // ✅ Exclude chính topic đang update
+    });
+
+    if (existingTopic) {
+      return { 
+        reason: 'DUPLICATE',
+        message: `Chủ đề "${payload.name}" đã tồn tại trong khóa học này`
+      };
+    }
+
+    topic.name = payload.name.trim();
+  }
+
   if (payload.image) topic.image = payload.image;
   if (payload.description !== undefined) topic.description = payload.description;
   if (payload.category) topic.category = payload.category;
   if (payload.isActive !== undefined) topic.isActive = payload.isActive;
+
   await topic.save();
-  return { topic };
+  
+  return { 
+    topic: {
+      id: topic._id,
+      courseId: topic.courseId,
+      name: topic.name,
+      image: topic.image,
+      description: topic.description,
+      category: topic.category,
+      totalWords: topic.totalWords,
+      isActive: topic.isActive
+    }
+  };
 };
 
 export const softDeleteTopic = async (id) => {
   const topic = await Topic.findById(id);
   if (!topic) return { reason: 'NOT_FOUND' };
   topic.isActive = false;
-
   await topic.save();
   return {};
 };
