@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import Topic from '../../../../../../AnhNguMsVan_backend/src/models/Topic';
 
-// Base URL chỉ là host, không kèm /api để tránh lặp
+// Base URL
 const API_BASE = import.meta?.env?.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/$/, "")
   : "http://localhost:4000";
@@ -17,17 +16,22 @@ export const useTopics = (token, courseId) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ==================== FETCH TOPICS ====================
   const fetchTopics = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
+
       if (courseId) {
         const response = await fetch(`${COURSES_API}/${courseId}`);
         const result = await response.json();
 
         if (result.success) {
           const courseTopics = result.data?.course?.topics ?? [];
-          setTopics(courseTopics.map((t) => ({ ...t, id: t._id })));
+          setTopics(courseTopics.map((t) => ({ 
+            ...t, 
+            id: t._id || t.id 
+          })));
         } else {
           setError('Lỗi khi tải topics của khóa học');
         }
@@ -36,187 +40,362 @@ export const useTopics = (token, courseId) => {
         const result = await response.json();
 
         if (result.success) {
-          setTopics(result.data);
+          setTopics(result.data.map(t => ({
+            ...t,
+            id: t._id || t.id
+          })));
         } else {
           setError('Lỗi khi tải danh sách chủ đề');
         }
       }
     } catch (err) {
-      console.error('Error fetching topics:', err);
+      console.error('❌ Error fetching topics:', err);
       setError('Không thể kết nối đến server');
     } finally {
       setIsLoading(false);
     }
   }, [courseId]);
 
-  // Fetch chi tiết topic với words - Lazy loading
+  // ==================== FETCH TOPIC DETAIL ====================
   const fetchTopicDetail = useCallback(async (topicId) => {
+    if (!topicId) {
+      return null;
+    }
+
     try {
       const response = await fetch(`${TOPICS_API}/${topicId}`);
       const result = await response.json();
 
-      if (result.success) {
-        setSelectedTopic(result.data);
-        return result.data;
+      if (result.success && result.data) {
+        const topic = {
+          ...result.data,
+          id: result.data._id || result.data.id
+        };
+        
+        setSelectedTopic(topic);
+          
+        return topic; // ✅ Return topic để caller sử dụng
+      } else {
+        console.error('❌ [useTopics] Invalid response:', result);
+        return null;
       }
     } catch (err) {
-      console.error('Error fetching topic detail:', err);
+      console.error('❌ [useTopics] Error fetching topic detail:', err);
       setError('Không thể tải chi tiết chủ đề');
+      return null;
     }
   }, []);
 
-  // Add topic
+  // ==================== ADD TOPIC ====================
   const addTopic = useCallback(async (topicData) => {
-    const response = await fetch(`${TOPICS_ADMIN_API}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(topicData)
-    });
+    try {
+      console.log('➕ [useTopics] Adding topic:', topicData);
 
-    const result = await response.json();
-    if (result.success) {
-      const newTopic = { ...result.data, id: result.data.id || result.data._id };
-
-      //Cập nhật vào state để UI thấy liền
-      setTopics((prev) => [...prev, newTopic]);
-
-      //Nếu đang trong 1 course, cập nhật topic vào course đó
-      if (courseId && newTopic.id) {
-        const updatedTopicIds = [...topics.map((t) => t._id || t.id), newTopic.id];
-        await fetch(`${COURSES_ADMIN_API}/${courseId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ topics: updatedTopicIds })
-        }).catch((err) => console.error('Error attaching topic to course', err));
+      // ✅ Validate courseId
+      if (!topicData.courseId) {
+        console.error('❌ courseId is required');
+        return {
+          success: false,
+          message: 'courseId là bắt buộc'
+        };
       }
 
-      await fetchTopics();
-    }
-    return result;
-  }, [token, courseId, fetchTopics, topics]);
+      const response = await fetch(`${TOPICS_ADMIN_API}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(topicData)
+      });
 
-  // Update topic
-  const updateTopic = useCallback(async (topicId, topicData) => {
-    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(topicData)
-    });
+      const result = await response.json();
+      console.log('📦 [useTopics] Add topic response:', result);
 
-    const result = await response.json();
-    if (result.success) {
-      const updatedTopic = result.data ?? { ...topicData, id: topicId };
-      setTopics(prev => prev.map(t => (t.id || t._id) === topicId ? { ...t, ...updatedTopic } : t));
-      await fetchTopicDetail(topicId);
-      await fetchTopics();
-    }
-    return result;
-  }, [token, fetchTopicDetail, fetchTopics]);
+      if (result.success && result.data) {
+        // ✅ Normalize topic data
+        const newTopic = {
+          ...result.data,
+          id: result.data._id || result.data.id,
+          _id: result.data._id || result.data.id
+        };
 
-  // Delete topic
-  const deleteTopic = useCallback(async (topicId) => {
-    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+        console.log('✅ [useTopics] New topic created:', newTopic);
 
-    const result = await response.json();
-    if (result.success) {
-      setTopics((prev) => {
-        const next = prev.filter(t => (t.id || t._id) !== topicId);
-
-        // Nếu đang trong course, cập nhật course sau khi state tính xong
-        if (courseId) {
-          const remainingIds = next.map(t => t._id || t.id);
-          fetch(`${COURSES_ADMIN_API}/${courseId}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ topics: remainingIds })
-          }).catch((err) => console.error('Error detaching topic from course', err));
+        // ✅ Check newTopic có id không
+        if (!newTopic.id) {
+          console.error('❌ [useTopics] New topic missing id:', newTopic);
+          return {
+            success: false,
+            message: 'Lỗi: Topic được tạo nhưng không có ID'
+          };
         }
 
-        return next;
-      });
-    }
-    return result;
-  }, [token, courseId, topics]);
+        // Cập nhật state
+        setTopics((prev) => [...prev, newTopic]);
 
-  // Add word to topic
-  const addWordToTopic = useCallback(async (topicId, wordData) => {
-    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(wordData)
-    });
+        // ✅ Nếu đang trong course, cập nhật course
+        if (courseId) {
+          console.log('🔗 [useTopics] Attaching topic to course:', courseId);
+          
+          const updatedTopicIds = [
+            ...topics.map((t) => t._id || t.id),
+            newTopic.id
+          ];
 
-    const result = await response.json();
-    if (result.success) {
-      setTopics(prev => prev.map(t =>
-        t.id === topicId ? { ...t, totalWords: t.totalWords + 1 } : t
-      ));
-      await fetchTopicDetail(topicId);
-    }
-    return result;
-  }, [token, fetchTopicDetail]);
+          try {
+            await fetch(`${COURSES_ADMIN_API}/${courseId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ topics: updatedTopicIds })
+            });
+            
+            console.log('✅ [useTopics] Topic attached to course');
+          } catch (err) {
+            console.error('❌ Error attaching topic to course:', err);
+          }
+        }
 
-  useEffect(() => {
-    fetchTopics();
-  }, [fetchTopics]);
+        // Refresh topics list
+        await fetchTopics();
 
-  // edit word
-  const updateWord = useCallback(async (topicId, wordId, wordData) => {
-    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words/${wordId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(wordData)
-    });
-
-    const result = await response.json();
-    if (result.success) {
-      // Refresh topic detail để lấy data mới
-      await fetchTopicDetail(topicId);
-    }
-    return result;
-  }, [token, fetchTopicDetail]);
-
-  useEffect(() => {
-    fetchTopics();
-  }, [fetchTopics]);
-
-  // Delete word from topic
-  const deleteWord = useCallback(async (topicId, wordId) => {
-    const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words/${wordId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
+        return {
+          success: true,
+          data: newTopic,
+          message: 'Tạo chủ đề thành công'
+        };
+      } else {
+        console.error('❌ [useTopics] Add topic failed:', result);
+        return result;
       }
-    });
-
-    const result = await response.json();
-    if (result.success) {
-      // Refresh topic detail để lấy data mới
-      await fetchTopicDetail(topicId);
+    } catch (err) {
+      console.error('❌ [useTopics] Error adding topic:', err);
+      return {
+        success: false,
+        message: err.message || 'Lỗi khi tạo chủ đề'
+      };
     }
-    return result;
+  }, [token, courseId, fetchTopics, topics]);
+
+  // ==================== UPDATE TOPIC ====================
+  const updateTopic = useCallback(async (topicId, topicData) => {
+    try {
+      console.log('✏️ [useTopics] Updating topic:', topicId, topicData);
+
+      const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(topicData)
+      });
+
+      const result = await response.json();
+      console.log('📦 [useTopics] Update topic response:', result);
+
+      if (result.success) {
+        const updatedTopic = {
+          ...(result.data || topicData),
+          id: topicId,
+          _id: topicId
+        };
+
+        // Update local state
+        setTopics(prev => prev.map(t => 
+          (t.id || t._id) === topicId 
+            ? { ...t, ...updatedTopic } 
+            : t
+        ));
+
+        // Refresh topic detail nếu đang xem topic này
+        if (selectedTopic && (selectedTopic.id || selectedTopic._id) === topicId) {
+          await fetchTopicDetail(topicId);
+        }
+
+        console.log('✅ [useTopics] Topic updated successfully');
+      }
+
+      return result;
+    } catch (err) {
+      console.error('❌ [useTopics] Error updating topic:', err);
+      return {
+        success: false,
+        message: err.message || 'Lỗi khi cập nhật chủ đề'
+      };
+    }
+  }, [token, fetchTopicDetail, selectedTopic]);
+
+  // ==================== DELETE TOPIC ====================
+  const deleteTopic = useCallback(async (topicId) => {
+    try {
+      console.log('🗑️ [useTopics] Deleting topic:', topicId);
+
+      const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}` 
+        }
+      });
+
+      const result = await response.json();
+      console.log('📦 [useTopics] Delete topic response:', result);
+
+      if (result.success) {
+        setTopics((prev) => {
+          const next = prev.filter(t => (t.id || t._id) !== topicId);
+
+          // Nếu đang trong course, cập nhật course
+          if (courseId) {
+            const remainingIds = next.map(t => t._id || t.id);
+            
+            fetch(`${COURSES_ADMIN_API}/${courseId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ topics: remainingIds })
+            }).catch((err) => {
+              console.error('❌ Error detaching topic from course:', err);
+            });
+          }
+
+          return next;
+        });
+
+        console.log('✅ [useTopics] Topic deleted successfully');
+      }
+
+      return result;
+    } catch (err) {
+      console.error('❌ [useTopics] Error deleting topic:', err);
+      return {
+        success: false,
+        message: err.message || 'Lỗi khi xóa chủ đề'
+      };
+    }
+  }, [token, courseId]);
+
+  // ==================== ADD WORD ====================
+  const addWordToTopic = useCallback(async (topicId, wordData) => {
+    try {
+      console.log('➕ [useTopics] Adding word to topic:', topicId, wordData);
+
+      const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(wordData)
+      });
+
+      const result = await response.json();
+      console.log('📦 [useTopics] Add word response:', result);
+
+      if (result.success) {
+        // Update totalWords count
+        setTopics(prev => prev.map(t =>
+          (t.id || t._id) === topicId 
+            ? { ...t, totalWords: (t.totalWords || 0) + 1 } 
+            : t
+        ));
+
+        // Refresh topic detail
+        await fetchTopicDetail(topicId);
+
+        console.log('✅ [useTopics] Word added successfully');
+      }
+
+      return result;
+    } catch (err) {
+      console.error('❌ [useTopics] Error adding word:', err);
+      return {
+        success: false,
+        message: err.message || 'Lỗi khi thêm từ vựng'
+      };
+    }
   }, [token, fetchTopicDetail]);
+
+  // ==================== UPDATE WORD ====================
+  const updateWord = useCallback(async (topicId, wordId, wordData) => {
+    try {
+      console.log('✏️ [useTopics] Updating word:', topicId, wordId, wordData);
+
+      const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words/${wordId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(wordData)
+      });
+
+      const result = await response.json();
+      console.log('📦 [useTopics] Update word response:', result);
+
+      if (result.success) {
+        await fetchTopicDetail(topicId);
+        console.log('✅ [useTopics] Word updated successfully');
+      }
+
+      return result;
+    } catch (err) {
+      console.error('❌ [useTopics] Error updating word:', err);
+      return {
+        success: false,
+        message: err.message || 'Lỗi khi cập nhật từ vựng'
+      };
+    }
+  }, [token, fetchTopicDetail]);
+
+  // ==================== DELETE WORD ====================
+  const deleteWord = useCallback(async (topicId, wordId) => {
+    try {
+      console.log('🗑️ [useTopics] Deleting word:', topicId, wordId);
+
+      const response = await fetch(`${TOPICS_ADMIN_API}/${topicId}/words/${wordId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      console.log('📦 [useTopics] Delete word response:', result);
+
+      if (result.success) {
+        // Update totalWords count
+        setTopics(prev => prev.map(t =>
+          (t.id || t._id) === topicId 
+            ? { ...t, totalWords: Math.max(0, (t.totalWords || 0) - 1) } 
+            : t
+        ));
+
+        // Refresh topic detail
+        await fetchTopicDetail(topicId);
+
+        console.log('✅ [useTopics] Word deleted successfully');
+      }
+
+      return result;
+    } catch (err) {
+      console.error('❌ [useTopics] Error deleting word:', err);
+      return {
+        success: false,
+        message: err.message || 'Lỗi khi xóa từ vựng'
+      };
+    }
+  }, [token, fetchTopicDetail]);
+
+  // ==================== INITIAL LOAD ====================
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
 
   return {
     topics,

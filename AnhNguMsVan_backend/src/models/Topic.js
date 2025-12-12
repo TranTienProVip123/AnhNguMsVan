@@ -27,10 +27,17 @@ const wordSchema = new mongoose.Schema({
 });
 
 const topicSchema = new mongoose.Schema({
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    required: true,
+    index: true
+  },
   name: {
     type: String,
     required: true,
-    unique: true
+    trim: true
+    // unique: true
   },
   image: {
     type: String,
@@ -65,6 +72,16 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// ✅ THÊM: Compound unique index (courseId + name)
+// Cho phép trùng name giữa các course, chỉ unique trong cùng course
+topicSchema.index(
+  { courseId: 1, name: 1 }, 
+  { 
+    unique: true,
+    name: 'courseId_name_unique'
+  }
+);
+
 // Đảm bảo virtuals được included khi convert to JSON
 topicSchema.set('toJSON', { 
   virtuals: true,
@@ -80,6 +97,8 @@ topicSchema.set('toObject', {
 // topicSchema.index({ name: 1 });
 // topicSchema.index({ category: 1 });
 // topicSchema.index({ isActive: 1 });
+topicSchema.index({ isActive: 1, createdAt: -1 });
+
 
 const Topic = mongoose.model('Topic', topicSchema);
 

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useCloudinary } from '../../hooks/useCloudinary';
 
 const AddTopicModal = ({ isOpen, onClose, onSubmit }) => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const courseId = queryParams.get('courseId');
+  
   const [formData, setFormData] = useState({
     name: "",
     image: "",
@@ -36,7 +41,10 @@ const AddTopicModal = ({ isOpen, onClose, onSubmit }) => {
       return;
     }
 
-    const result = await onSubmit(formData);
+    const result = await onSubmit({
+      ...formData,
+      courseId
+    });
     
     if (result.success) {
       alert('Thêm chủ đề thành công!');

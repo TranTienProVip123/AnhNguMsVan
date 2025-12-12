@@ -3,14 +3,16 @@ import React, { memo } from 'react';
 const TopicItem = memo(({ 
   topic,
   progress,
-  isActive, 
+  isActive,
+  isCompleted,
   isAdmin, 
   openMenuId, 
   onTopicClick, 
   onToggleMenu, 
   onAddWord, 
   onEditTopic, 
-  onDeleteTopic 
+  onDeleteTopic,
+  onResetTopic,
 }) => {
 
   // Extract progress data với fallback values
@@ -34,6 +36,9 @@ const TopicItem = memo(({
     >
       <div className="topic-image">
         <img src={topic.image} alt={topic.name} loading="lazy" />
+        {isCompleted && (
+          <span className="completed-badge">✓ Hoàn thành</span>
+        )}
       </div>
       <div className="topic-info">
         <h4 className="topic-title">{topic.name}</h4>
@@ -41,6 +46,19 @@ const TopicItem = memo(({
           <span className="topic-words">{totalWordsLearned}/{topic.totalWords ?? 0} từ</span>
           <div className="topic-stats-right">
             <span className="topic-progress">{completionRate}%</span>
+            {isCompleted && (
+              <button
+                className="reset-topic-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onResetTopic(topic.id || topic._id);
+                }}
+                title="Làm lại chủ đề"
+                type="button"
+              >
+                🔄
+              </button>
+            )}
             {isAdmin && (
               <div className="topic-menu-container">
                 <button 

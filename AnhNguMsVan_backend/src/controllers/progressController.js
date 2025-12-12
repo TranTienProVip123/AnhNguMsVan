@@ -11,14 +11,14 @@ export const updateWordProgressController = async (req, res, next) => {
     const userId = req.user.userId;
     // VALIDATION: Kiểm tra userId
     if (!userId) {
-      console.error('❌ [CONTROLLER] No userId - req.user:', req.user);
+      // console.error('❌ [CONTROLLER] No userId - req.user:', req.user);
       return res.status(401).json({
         success: false,
         message: 'Unauthorized - No user ID found'
       });
     }
 
-    console.log('✅ [CONTROLLER] userId:', userId);
+    // console.log('✅ [CONTROLLER] userId:', userId);
     const { courseId, topicId, wordId, isCorrect } = req.body;
 
     if (!courseId || !topicId || !wordId) {
