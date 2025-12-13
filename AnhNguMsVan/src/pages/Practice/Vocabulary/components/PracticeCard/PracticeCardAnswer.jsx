@@ -76,10 +76,8 @@ const PracticeCardAnswer = memo(({
         {showAuthBanner && (
           <div className="auth-banner">
             <div className="auth-banner-content">
-              <span className="auth-banner-icon">🔒</span>
               <div className="auth-banner-text">
-                <strong>Yêu cầu đăng nhập</strong>
-                <p>Bạn cần đăng nhập để kiểm tra đáp án và lưu tiến độ học.</p>
+                <p>Đăng nhập để kiểm tra và lưu tiến độ học.</p>
               </div>
               <button
                 className="auth-banner-login-btn"
@@ -88,13 +86,13 @@ const PracticeCardAnswer = memo(({
               >
                 Đăng nhập ngay
               </button>
-              <button
+              {/* <button
                 className="auth-banner-close"
                 onClick={() => setShowAuthBanner(false)}
                 type="button"
               >
                 ✕
-              </button>
+              </button> */}
             </div>
           </div>
         )}

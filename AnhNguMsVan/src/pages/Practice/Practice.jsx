@@ -77,10 +77,8 @@ const Practice = () => {
     );
 
     // 2. Navigate ngay (không đợi API)
-    navigate(`/vocabulary?courseId=${id}`,{
-      state: { title: course.title },
-    });
-
+    navigate(`/vocabulary?courseId=${id}&courseTitle=${encodeURIComponent(course.title)}`);
+    
     // 3. Background: Track vào server
     try {
       const response = await fetch(`${API_BASE_URL}/api/courses/${id}/start`, {

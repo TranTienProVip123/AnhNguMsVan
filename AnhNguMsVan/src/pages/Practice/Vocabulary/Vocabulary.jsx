@@ -108,6 +108,9 @@ const Vocabulary = () => {
         <Header />
         <div className="vocabulary-page">
           <div className="vocabulary-header">
+            <button>
+              Quay lại
+            </button>
             <h1>{logic.decodedTitle}</h1>
           </div>
 
@@ -222,6 +225,9 @@ const Vocabulary = () => {
       <Header />
       <div className="vocabulary-page">
         <div className="vocabulary-header">
+          <button className ="btn-back-practice" onClick={() => window.history.back()}>
+             ⬅Quay lại
+          </button>
           <h1>{logic.decodedTitle}</h1>
         </div>
 
