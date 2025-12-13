@@ -8,10 +8,22 @@
   padding-top: 60px;
 }
 
-.vocabulary-page h1{
-  padding-left: 180px;
-  font-size: 2rem;
-  font-weight: 700;
+.vocabulary-header{
+  padding-left: 140px;
+  padding-top: 10px;
+}
+
+.btn-back-practice {
+  padding: 5px 15px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-back-practice:hover {
+  background: #5568d3;
+  color: white;
 }
 
 .vocabulary-container {
@@ -19,7 +31,7 @@
   gap: 20px;
   max-width: 1300px;
   margin: 0 auto;
-  padding: 10px;
+  padding: 5px;
   height: calc(100vh - 100px);
 }
 

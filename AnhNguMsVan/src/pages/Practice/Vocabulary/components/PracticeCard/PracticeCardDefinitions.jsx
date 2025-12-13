@@ -36,7 +36,7 @@ const PracticeCardDefinitions = memo(({ word, showAnswer }) => {
       
       {word.meaning && (
         <p className="definition-vn">
-          <strong>Định nghĩa tiếng Việt:</strong> {word.meaning}
+          <strong>Định nghĩa:</strong> {word.meaning}
         </p>
       )}
       
@@ -54,7 +54,7 @@ const PracticeCardDefinitions = memo(({ word, showAnswer }) => {
       
       {word.exampleVN && (
         <p className="example-vn">
-          <strong>Ví dụ tiếng Việt:</strong> {word.exampleVN}
+          <strong>Ví dụ:</strong> {word.exampleVN}
         </p>
       )}
     </div>

@@ -104,23 +104,20 @@
 .word-definitions p {
   margin-bottom: 12px;
   line-height: 1.6;
+  color: #544;
+  font-weight: 500;
 }
 
 .definition-en {
   font-size: 1.05rem;
-  color: #444;
-  font-weight: 500;
 }
 
 .definition-vn {
   font-size: 1rem;
-  color: #444;
 }
 
 .example-en {
   font-size: 1rem;
-  color: #444;
-  font-weight: 500;
 }
 
 /* Example text */
@@ -551,7 +548,7 @@
 
 /* NEW: Auth Banner Styles */
 .auth-banner {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   animation: slideDown 0.3s ease;
 }
 
@@ -570,7 +567,7 @@
   background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
   border: 2px solid #ffc107;
   border-radius: 12px;
-  padding: 15px 20px;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -578,20 +575,8 @@
   position: relative;
 }
 
-.auth-banner-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
 .auth-banner-text {
   flex: 1;
-}
-
-.auth-banner-text strong {
-  display: block;
-  color: #856404;
-  font-size: 1rem;
-  margin-bottom: 4px;
 }
 
 .auth-banner-text p {
@@ -601,10 +586,10 @@
   line-height: 1.4;
 }
 
-.auth-banner-close {
+/* .auth-banner-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 3px;
+  right: 0px;
   background: transparent;
   border: none;
   font-size: 1.2rem;
@@ -622,7 +607,7 @@
 .auth-banner-close:hover {
   background: rgba(133, 100, 4, 0.1);
   transform: rotate(90deg);
-}
+} */
 
 /* NEW: Login button in banner */
 .auth-banner-login-btn {

@@ -39,10 +39,6 @@ const PracticeCard = memo(({
   const [isFlipped, setIsFlipped] = useState(false);
 
   // useEffect(() => {
-  //   setIsFlipped(false);
-  // }, [word?._id]);
-
-  // useEffect(() => {
   //   if (!showAnswer) {
   //     setIsFlipped(false);
   //   }
